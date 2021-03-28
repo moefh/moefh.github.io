@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Porting Loser Corps to the ESP32 - Part 3 | MoeFH&#39;s Electronic Adventures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="More progress in porting Loser Corps to the ESP32 (here&#39;s part 1 of the saga). Even though there’s nothing really exciting to report, this is a very long post because there’s a lot of small change">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Porting Loser Corps to the ESP32 - Part 3">
+<meta property="og:url" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/index.html">
+<meta property="og:site_name" content="MoeFH&#39;s Electronic Adventures">
+<meta property="og:description" content="More progress in porting Loser Corps to the ESP32 (here&#39;s part 1 of the saga). Even though there’s nothing really exciting to report, this is a very long post because there’s a lot of small change">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png">
+<meta property="article:published_time" content="2021-03-27T19:11:51.000Z">
+<meta property="article:modified_time" content="2021-03-28T00:49:55.656Z">
+<meta property="article:author" content="MoeFH">
+<meta property="article:tag" content="esp32">
+<meta property="article:tag" content="vga">
+<meta property="article:tag" content="loser-corps">
+<meta property="article:tag" content="wiimote">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="MoeFH's Electronic Adventures" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">MoeFH&#39;s Electronic Adventures</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://moefh.gihub.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Porting-Loser-Corps-to-the-ESP32-Part-3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" class="article-date">
+  <time class="dt-published" datetime="2021-03-27T19:11:51.000Z" itemprop="datePublished">2021-03-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Porting Loser Corps to the ESP32 - Part 3
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>More progress in porting Loser Corps to the ESP32 (<a href="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+<p>Even though there’s nothing <em>really</em> exciting to report, this is a
+very long post because there’s a lot of small changes:</p>
+<ul>
+<li>Wiimote support</li>
+<li>new VGA connector with improved DACs</li>
+<li>rewriting of the VGA output code</li>
+<li>created a 6x8 font</li>
+</ul>
+<h2 id="Wiimote-Support"><a href="#Wiimote-Support" class="headerlink" title="Wiimote Support"></a>Wiimote Support</h2><p>The game now supports the Wiimote controller (via Bluetooth) using
+takeru’s <a target="_blank" rel="noopener" href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
+to make a very small change to use it: I added a <code>void *</code> parameter to
+the callback function, so it can update the state of the controller
+object without forcing it to refer to the global binding.</p>
+<p>The library works perfectly, the only slightly annoying thing is that
+I haven’t figured out how to permanently pair the controller with the
+ESP32, so every time the ESP32 restarts you have to press the Wiimote
+buttons 1 and 2 at the same time to make the Bluetooth connection. Not
+a big deal, but it could be better.</p>
+<h2 id="New-VGA-DACs"><a href="#New-VGA-DACs" class="headerlink" title="New VGA DACs"></a>New VGA DACs</h2><p>A made a new VGA connector with new DACs. The old one is slightly
+wonky because I didn’t have resistors with the right values when I made
+it, so I finally got some new resistors and made a new one:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector"></p>
+<p>For comparison, here’s the old one:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector"></p>
+<p>Like before, the big pain for me was to solder all the ground pins of
+the connector together. That’s the 3rd time I solder wires to one of
+these VGA (DB15) connectors, and every time is a huge hassle. Maybe
+I’m dumb and there’s an easy way to do it, but the way I do it is
+really hard.</p>
+<p>To see why the new DAC is better than the old one, we have to talk
+about how the VGA color signal is generated. The monitor receives each
+color component (R, G, B) in its own wire, with voltage between 0V and
+0.7V to indicate the intensity. To produce an image, the voltage has
+to be changed as the monitor sweeps the screen to draw the pixels:
+each pixel is drawn with the RGB intensity corresponding to the
+voltage of the red, green and blue wires at the time it’s being drawn.</p>
+<p>The ESP32 only has 2 internal DAC outputs, so we can’t use them to
+create the 3 voltages we need for the RGB wires (even if it had 3, its
+DACs aren’t nearly fast enough to generate the signal we need at over
+12MHz). So we make the ESP32 output each color component as multiple
+digital pins: in our case, we use 2 pins per component. This means
+that each component has 4 possible intensity levels (00, 01, 10, 11),
+and the DAC has to convert these to 4 voltages between 0V and
+0.7V. Ideally, we’d like to map them like this:</p>
+<table>
+<thead>
+<tr>
+<th>pin values (input)</th>
+<th>intensity</th>
+<th>VGA voltage (output)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>0%</td>
+<td>0V</td>
+</tr>
+<tr>
+<td>01</td>
+<td>33%</td>
+<td>0.23V</td>
+</tr>
+<tr>
+<td>10</td>
+<td>67%</td>
+<td>0.47V</td>
+</tr>
+<tr>
+<td>11</td>
+<td>100%</td>
+<td>0.7V</td>
+</tr>
+</tbody></table>
+<p>The ESP32 output pins are 3.3V when high and 0V when low, so we can
+build a small circuit connecting resistors to the two output pins of
+each color to generate these voltages, or at least something close to
+it:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
+<p>That’s the DAC. We just have to choose values for R1 and R2 so that
+when Pin1 and Pin2 are high/low we have the desired voltage in output
+as shown in the table above. (By the way, the 75Ω resistor is there
+for impedance matching with the monitor – I don’t think it’s really
+right, but I don’t know how to match the impedance properly and in any
+case it does work fine like this).</p>
+<p>The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
+available at the time. The new DAC has 1KΩ and 470Ω, which outputs
+voltages closer to what we want:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltage levels"></p>
+<p>The green line shows the desired output level for the maximum
+intensity (0.7V which is what 11 corresponds to). The orange, red and
+blue are the actual output voltages for 11, 10 and 01 (00 outputs 0V
+in both, that’s the easy part).</p>
+<p>As you can see, neither of the DACs output 0.7V when both pins are
+high, but the new DAC is closer. That doesn’t matter too much, though,
+because the overall brightness of the image can be adjusted in the
+monitor. The bigger problem is the spacing between the voltage
+levels. The new DAC has more consistent spacing, while in the old DAC
+the space between 01 and 10 was much smaller then the other ones.</p>
+<p>I’m not sure the result is all that better, but for the record here’s
+a photo of the game running with the new DACs:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
+<h2 id="Rewriting-the-VGA-Output-Code"><a href="#Rewriting-the-VGA-Output-Code" class="headerlink" title="Rewriting the VGA Output Code"></a>Rewriting the VGA Output Code</h2><p>I ended up rewriting the VGA output code. I was using bitluni’s
+excellent <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
+library does a lot of stuff we don’t need. That makes the code larger
+and also more complicated: when reading the code, I had trouble
+following exactly how things are done with the code written in C++
+with multiple inheritance.</p>
+<p>So to make sure I understood every detail, I ended up rewriting the
+code in plain C style. My code supports only double-buffered output,
+and changing the resolution requires altering the appropriate
+constants by hand (it’s not too hard, they’re all at the top of the
+file). It also doesn’t have any drawing API, any drawing must be done
+by writing to the framebuffer directly – which suits the game just
+fine, because I was doing that already with ESP32Lib.</p>
+<p>My only improvement over ESP32Lib was making the I2S system trigger an
+interrupt at the end of each frame (the interrupy simply increments a
+frame counter). With that, the main game loop can now wait for the end
+of the frame to swap the framebuffers and start drawing again
+(basically a vsync). That removes the annoying horizontal line from
+the screen which happened when the image was updated while it was
+being drawn, and also forces a nice constant framerate (that’s why
+that photo above shows 60fps).</p>
+<p>It’s still possible to disable the vsync (returning to the old
+variable framerate and annoying horizontal line), which I do
+occasionally to see if something affects the overall speed too much.</p>
+<h2 id="New-Font"><a href="#New-Font" class="headerlink" title="New Font"></a>New Font</h2><p>Since I’m not using ESP32Lib anymore, I had to make my own font and
+font-rendering code (which is pretty unoptimized, but it doesn’t
+matter for now since I’m only using text for debugging). I used
+<a target="_blank" rel="noopener" href="https://krita.org/en/">Krita</a> to draw the font because it’s easy to
+draw pixel-by-pixel with it, at least when compared to Gimp.</p>
+<p>Here’s an image of the 6x8 font:</p>
+<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
+<p>The yellow/greenish background is what I used when drawing the font,
+it’s not present in the final data, which has 1 bit per pixel.</p>
+<h2 id="Next-Steps"><a href="#Next-Steps" class="headerlink" title="Next Steps"></a>Next Steps</h2><p>I’m not sure what I’ll do next: probably either sound or network. For
+network, I haven’t even decided if I’ll use ESP32’s “ESP-NOW” protocol
+or normal WiFi/IP, but it will be fun to investigate the pros and cons
+of each one.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckms42mp800001jyqe0rg7mvh" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Porting Loser Corps to the ESP32 - Part 2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 20px;">vga</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/">Porting Loser Corps to the ESP32 - Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/">Porting Loser Corps to the ESP32</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/21/ESP32-VGA-output/">ESP32 VGA output</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/15/STM32-with-pure-assembly/">STM32 with pure assembly</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2021 MoeFH<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

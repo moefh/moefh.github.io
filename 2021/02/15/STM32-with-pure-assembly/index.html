@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>STM32 with pure assembly | MoeFH&#39;s Electronic Adventures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="I was finally able to get my hands on an STM32! This board (sometimes called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip on it:  The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32 with pure assembly">
+<meta property="og:url" content="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/index.html">
+<meta property="og:site_name" content="MoeFH&#39;s Electronic Adventures">
+<meta property="og:description" content="I was finally able to get my hands on an STM32! This board (sometimes called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip on it:  The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://moefh.gihub.io/blog/2021/02/15/STM32-with-pure-assembly/image1.jpg">
+<meta property="article:published_time" content="2021-02-15T22:14:52.000Z">
+<meta property="article:modified_time" content="2021-03-08T09:46:38.602Z">
+<meta property="article:author" content="MoeFH">
+<meta property="article:tag" content="stm32">
+<meta property="article:tag" content="arm">
+<meta property="article:tag" content="assembly">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://moefh.gihub.io/blog/2021/02/15/STM32-with-pure-assembly/image1.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="MoeFH's Electronic Adventures" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">MoeFH&#39;s Electronic Adventures</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://moefh.gihub.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-STM32-with-pure-assembly" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/02/15/STM32-with-pure-assembly/" class="article-date">
+  <time class="dt-published" datetime="2021-02-15T22:14:52.000Z" itemprop="datePublished">2021-02-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      STM32 with pure assembly
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>I was finally able to get my hands on an STM32! This board (sometimes
+called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip on
+it:</p>
+<p><img src="/blog/2021/02/15/STM32-with-pure-assembly/image1.jpg" alt="ST-Link programmer connected to the Blue Pill"></p>
+<p>The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of SRAM and
+64KB of flash.  I have great memories of playing with ARM processors
+with the Gameboy Advance (ARM7TDMI) and Nintendo DS (ARM946E-S), so I
+decided to try to write some stuff using just assembly.</p>
+<p>The whole deal was much easier than I expected. In the Nintendo DS
+days I had to compile my own gcc and binutils to be able to build
+binaries, and then use a “backup” flash cartridge to run them in the
+hardware. Today things are much easier: the “ST-Link” programmer is
+very cheap (although what I got is probably a clone), the Arduino IDE
+supports STM32 with a simple change in its configuration, and people
+make Linux packages for the cross-compiler and other tools (there’s
+also the STM32CubeIDE, which is based on Eclipse and is provided by
+ST). For my needs, I just had to install <code>binutils-arm-none-eabi</code> and
+<code>gcc-arm-none-eabi</code> on Ubuntu and I was well on my way to write some
+code.</p>
+<p>Now, since I wanted to write pure assembly with no help from any
+compiler or library, I needed a linker script, which tells the linker
+where each section of the program goes in memory. I searched the web
+but couldn’t find anyone who had <em>exactly</em> what I needed: examples
+were either for the right chip but other toolchains (there’s an
+YouTube video of someone doing this with the STM32CubeMX IDE, which
+doesn’t seem to use GNU’s ld?), or they were using the GNU toolchain
+but for different STM32 chips. So I ended up mixing and matching (and
+confirming things in the STM32F10x user manual) and ended up with
+this:</p>
+<figure class="highlight plain"><figcaption><span>stm32f103.ld</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* linker script for stm32f103.ld *&#x2F;</span><br><span class="line"></span><br><span class="line">ENTRY(start);</span><br><span class="line"></span><br><span class="line">MEMORY &#123;</span><br><span class="line"> RAM   (rwx) : ORIGIN &#x3D; 0x20000000, LENGTH &#x3D; 20K</span><br><span class="line"> FLASH (rx)  : ORIGIN &#x3D; 0x08000000, LENGTH &#x3D; 64K</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">  .text :</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    *(.isr_vector)  &#x2F;* &lt;-- this has to be at the very start of flash *&#x2F;</span><br><span class="line">    *(.text)</span><br><span class="line">    *(.text*)</span><br><span class="line">    *(.rodata)</span><br><span class="line">    *(.rodata*)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">  &#125; &gt; FLASH</span><br><span class="line"></span><br><span class="line">  __data_flash &#x3D; .;</span><br><span class="line"></span><br><span class="line">  .data : AT ( __data_flash )</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __data_start &#x3D; .;</span><br><span class="line">    *(.data)</span><br><span class="line">    *(.data*)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __data_end &#x3D; .;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">  .bss :</span><br><span class="line">  &#123;</span><br><span class="line">    __bss_start &#x3D; .;</span><br><span class="line">    *(.bss)</span><br><span class="line">    *(.bss*)</span><br><span class="line">    *(COMMON)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __bss_end &#x3D; .;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">  __stack_size &#x3D; 1024;</span><br><span class="line">  __stack_end &#x3D; ORIGIN(RAM)+LENGTH(RAM);</span><br><span class="line">  __stack_start &#x3D; __stack_end - __stack_size;</span><br><span class="line">  . &#x3D; __stack_start;</span><br><span class="line">  .stack :</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; . + __stack_size;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>It has a lot of stuff I don’t need (a lot of these sections are used
+by gcc), but I kept them anyway since they don’t hurt and I might want
+to use them in the future.</p>
+<p>The assembly code needed to set up and control a GPIO pin is pretty
+simple, the only thing that stumped me for a bit was not knowing that
+the flash memory needs to have an interrupt vector at the very start.
+I ended up putting it in its own section, <code>.isr_vector</code>, to make easy
+for the linker script to place it exactly at the flash beginning.  The
+first entry of the vector is not an interrupt handler, but the address
+of the top of the stack region (the stack grows down), and the second
+one is the address of the start of the code.  Apparently it really
+wants some extra entries there for other handlers; the CPU locks up if
+they’re not present (even though I made the handlers themselves into
+an infinite loop). I’m not entirely sure what’s going on there, but
+adding 6 handlers after the start address seems to keep the CPU happy.</p>
+<p>Anyway, here’s the assembly code. In the STM32, everything is
+controlled via registers mapped in memory. The code first enables the
+clock for the pins on port C (all peripheral clocks start disabled to
+save power), then configures pin 13 of port C as output, then sets the
+pin state, and then loops forever.</p>
+<figure class="highlight armasm"><figcaption><span>main.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">        .cpu cortex-m3</span><br><span class="line">        .syntax unified</span><br><span class="line">        <span class="meta">.thumb</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ isr_vector</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.section</span> .isr_vector</span><br><span class="line">        <span class="meta">.word</span> __stack_end</span><br><span class="line">        <span class="meta">.word</span> start</span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ NMI handler</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ hard fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ memory fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ bus fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ usage fault</span></span><br><span class="line"></span><br><span class="line">        <span class="meta">.text</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ start</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.global</span> start</span><br><span class="line">        <span class="meta">.thumb_func</span></span><br><span class="line"><span class="symbol">start:</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ enable clock for port C pins</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0x10</span>             <span class="comment">@ bit 4 = port C enable</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r1</span>, <span class="number">=0x40021000</span>       <span class="comment">@ RCC base address</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x18</span>]       <span class="comment">@ 0x18 = reg for APB2 enable (where port C lives)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ configure port C pin 13 as output</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0x44244444</span>       <span class="comment">@ set pin 13 as output, other 7 pins stay as input</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r1</span>, <span class="number">=0x40011000</span>       <span class="comment">@ port C base address</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x04</span>]       <span class="comment">@ 0x04 = reg for config of 8 higher pins of port</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ set port C pin 13 to high (commented) or low</span></span><br><span class="line">        <span class="comment">@ldr r0, =0x2000          @ pin 13 high (0x2000 = 1&lt;&lt;13)</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0</span>                <span class="comment">@ pin 13 low</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x0c</span>]       <span class="comment">@ 0x0c = reg for output data of port pins</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">start_loop:</span></span><br><span class="line">        <span class="keyword">b</span> start_loop</span><br><span class="line"></span><br><span class="line"><span class="symbol">start_end:</span></span><br><span class="line">        .pool</span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ halt</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.thumb_func</span></span><br><span class="line"><span class="symbol">halt:</span></span><br><span class="line">        <span class="keyword">b</span> halt</span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ DATA section</span></span><br><span class="line">        <span class="comment">@ (not used, added here just to check that</span></span><br><span class="line">        <span class="comment">@ the linker script is working)</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.section</span> <span class="meta">.data</span></span><br><span class="line">        <span class="meta">.ascii</span> <span class="string">&quot;Hello, world!\0&quot;</span></span><br><span class="line">        </span><br></pre></td></tr></table></figure>
+<p>The board has an LED connected to pin 13 of port C; it seems that the
+LED’s cathode is connected to the pin (with the anode connected to
++Vdd) because the LED turns on when the pin is brought low.</p>
+<p>This code works, but if I ever want to use the stuff in the <code>.data</code>
+section, I’ll have to copy it from the flash memory to RAM.  The
+linker script is prepared for that: it defines the symbol
+<code>__data_flash</code> to the address of the very end of the <code>.text</code> section,
+which is the start of where the <code>.data</code> section stuff is located in
+the flash memory.  So I’ll just have to make a <code>memcpy</code> function that
+copies <code>__data_end-__data_start</code> bytes from <code>__data_flash</code> to
+<code>__data_start</code> (which is the address of the <code>.data</code> section in RAM).</p>
+<p>After assembling the code with <code>arm-none-eabi-as</code> and linking it with
+<code>arm-none-eabi-ld</code>, I used <code>arm-none-eabi-objcopy</code> to convert the ELF
+executable to a stripped out binary suitable to write to flash. These
+are the commands that <code>make</code> runs:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">arm-none-eabi-as -o main.o main.s</span><br><span class="line">arm-none-eabi-ld -Tstm32f103.ld -o main.elf main.o</span><br><span class="line">arm-none-eabi-objcopy -O binary main.elf main.bin</span><br></pre></td></tr></table></figure>
+<p>And, finally, to upload the final binary to the flash in the chip I
+ended up using the Windows STLink command line utility that the
+Arduino IDE installs when you install the STM32 boards. I think it’s
+the same tool that can be downloaded from the STM32 website (which
+comes with a GUI besides the command line tool), but I haven’t
+checked.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/" data-id="ckm0elub50005ungp3u7lav3w" data-title="STM32 with pure assembly" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/02/21/ESP32-VGA-output/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          ESP32 VGA output
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 20px;">vga</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/">Porting Loser Corps to the ESP32 - Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/">Porting Loser Corps to the ESP32</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/21/ESP32-VGA-output/">ESP32 VGA output</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/15/STM32-with-pure-assembly/">STM32 with pure assembly</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2021 MoeFH<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
