@@ -13,12 +13,12 @@
 <meta property="og:site_name" content="MoeFH&#39;s Electronic Adventures">
 <meta property="og:description" content="More progress in porting Loser Corps to the ESP32 (here&#39;s part 1 of the saga). Even though there’s nothing really exciting to report, this is a very long post because there’s a lot of small change">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg">
-<meta property="og:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png">
 <meta property="article:published_time" content="2021-03-27T19:11:51.000Z">
 <meta property="article:modified_time" content="2021-03-28T00:49:55.656Z">
 <meta property="article:author" content="MoeFH">
@@ -27,7 +27,7 @@
 <meta property="article:tag" content="loser-corps">
 <meta property="article:tag" content="wiimote">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://moefh.gihub.io/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
+<meta name="twitter:image" content="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg">
   
     <link rel="alternate" href="/atom.xml" title="MoeFH's Electronic Adventures" type="application/atom+xml">
   
@@ -108,7 +108,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
 <p>Even though there’s nothing <em>really</em> exciting to report, this is a
 very long post because there’s a lot of small changes:</p>
 <ul>
@@ -130,9 +130,9 @@ a big deal, but it could be better.</p>
 <h2 id="New-VGA-DACs"><a href="#New-VGA-DACs" class="headerlink" title="New VGA DACs"></a>New VGA DACs</h2><p>A made a new VGA connector with new DACs. The old one is slightly
 wonky because I didn’t have resistors with the right values when I made
 it, so I finally got some new resistors and made a new one:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector"></p>
 <p>For comparison, here’s the old one:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector"></p>
 <p>Like before, the big pain for me was to solder all the ground pins of
 the connector together. That’s the 3rd time I solder wires to one of
 these VGA (DB15) connectors, and every time is a huge hassle. Maybe
@@ -186,7 +186,7 @@ and the DAC has to convert these to 4 voltages between 0V and
 build a small circuit connecting resistors to the two output pins of
 each color to generate these voltages, or at least something close to
 it:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
 <p>That’s the DAC. We just have to choose values for R1 and R2 so that
 when Pin1 and Pin2 are high/low we have the desired voltage in output
 as shown in the table above. (By the way, the 75Ω resistor is there
@@ -196,7 +196,7 @@ case it does work fine like this).</p>
 <p>The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
 available at the time. The new DAC has 1KΩ and 470Ω, which outputs
 voltages closer to what we want:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltage levels"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltage levels"></p>
 <p>The green line shows the desired output level for the maximum
 intensity (0.7V which is what 11 corresponds to). The orange, red and
 blue are the actual output voltages for 11, 10 and 01 (00 outputs 0V
@@ -209,7 +209,7 @@ levels. The new DAC has more consistent spacing, while in the old DAC
 the space between 01 and 10 was much smaller then the other ones.</p>
 <p>I’m not sure the result is all that better, but for the record here’s
 a photo of the game running with the new DACs:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
 <h2 id="Rewriting-the-VGA-Output-Code"><a href="#Rewriting-the-VGA-Output-Code" class="headerlink" title="Rewriting the VGA Output Code"></a>Rewriting the VGA Output Code</h2><p>I ended up rewriting the VGA output code. I was using bitluni’s
 excellent <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
 library does a lot of stuff we don’t need. That makes the code larger
@@ -240,7 +240,7 @@ matter for now since I’m only using text for debugging). I used
 <a target="_blank" rel="noopener" href="https://krita.org/en/">Krita</a> to draw the font because it’s easy to
 draw pixel-by-pixel with it, at least when compared to Gimp.</p>
 <p>Here’s an image of the 6x8 font:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
 <p>The yellow/greenish background is what I used when drawing the font,
 it’s not present in the final data, which has 1 bit per pixel.</p>
 <h2 id="Next-Steps"><a href="#Next-Steps" class="headerlink" title="Next Steps"></a>Next Steps</h2><p>I’m not sure what I’ll do next: probably either sound or network. For
@@ -251,7 +251,7 @@ of each one.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckms42mp800001jyqe0rg7mvh" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckmsi27je0004g0yqa735anox" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
       
       
       

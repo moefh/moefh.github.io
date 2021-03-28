@@ -95,7 +95,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
 <p>Even though there’s nothing <em>really</em> exciting to report, this is a
 very long post because there’s a lot of small changes:</p>
 <ul>
@@ -117,9 +117,9 @@ a big deal, but it could be better.</p>
 <h2 id="New-VGA-DACs"><a href="#New-VGA-DACs" class="headerlink" title="New VGA DACs"></a>New VGA DACs</h2><p>A made a new VGA connector with new DACs. The old one is slightly
 wonky because I didn’t have resistors with the right values when I made
 it, so I finally got some new resistors and made a new one:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector"></p>
 <p>For comparison, here’s the old one:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector"></p>
 <p>Like before, the big pain for me was to solder all the ground pins of
 the connector together. That’s the 3rd time I solder wires to one of
 these VGA (DB15) connectors, and every time is a huge hassle. Maybe
@@ -173,7 +173,7 @@ and the DAC has to convert these to 4 voltages between 0V and
 build a small circuit connecting resistors to the two output pins of
 each color to generate these voltages, or at least something close to
 it:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
 <p>That’s the DAC. We just have to choose values for R1 and R2 so that
 when Pin1 and Pin2 are high/low we have the desired voltage in output
 as shown in the table above. (By the way, the 75Ω resistor is there
@@ -183,7 +183,7 @@ case it does work fine like this).</p>
 <p>The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
 available at the time. The new DAC has 1KΩ and 470Ω, which outputs
 voltages closer to what we want:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltage levels"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltage levels"></p>
 <p>The green line shows the desired output level for the maximum
 intensity (0.7V which is what 11 corresponds to). The orange, red and
 blue are the actual output voltages for 11, 10 and 01 (00 outputs 0V
@@ -196,7 +196,7 @@ levels. The new DAC has more consistent spacing, while in the old DAC
 the space between 01 and 10 was much smaller then the other ones.</p>
 <p>I’m not sure the result is all that better, but for the record here’s
 a photo of the game running with the new DACs:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
 <h2 id="Rewriting-the-VGA-Output-Code"><a href="#Rewriting-the-VGA-Output-Code" class="headerlink" title="Rewriting the VGA Output Code"></a>Rewriting the VGA Output Code</h2><p>I ended up rewriting the VGA output code. I was using bitluni’s
 excellent <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
 library does a lot of stuff we don’t need. That makes the code larger
@@ -227,7 +227,7 @@ matter for now since I’m only using text for debugging). I used
 <a target="_blank" rel="noopener" href="https://krita.org/en/">Krita</a> to draw the font because it’s easy to
 draw pixel-by-pixel with it, at least when compared to Gimp.</p>
 <p>Here’s an image of the 6x8 font:</p>
-<p><img src="/blog/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
+<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
 <p>The yellow/greenish background is what I used when drawing the font,
 it’s not present in the final data, which has 1 bit per pixel.</p>
 <h2 id="Next-Steps"><a href="#Next-Steps" class="headerlink" title="Next Steps"></a>Next Steps</h2><p>I’m not sure what I’ll do next: probably either sound or network. For
@@ -238,7 +238,7 @@ of each one.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckms42mp800001jyqe0rg7mvh" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckmsi27je0004g0yqa735anox" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
       
       
       
@@ -274,9 +274,9 @@ of each one.</p>
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>I made some progress in porting Loser Corps to the ESP32 (<a href="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+        <p>I made some progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
 <p>Here’s a demo video (click to open Youtube):</p>
-<p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><img src="/blog/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video"></a></p>
+<p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video"></a></p>
 <p>(This video shows a slightly older version where collision detection
 was done with the image rectangle, not the character’s clipping
 rectangle, which is why it looks a little wonky in a few places.)</p>
@@ -291,7 +291,7 @@ pretty cheap and easy to use, but it requires one input pin of the
 ESP32 for each button, and one analog input pin for each direction of
 the stick – it’s really just a bunch of of buttons and potentiometers
 conveniently placed on a PCB:</p>
-<p><img src="/blog/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I&#39;m using"></p>
+<p><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I&#39;m using"></p>
 <p>Don’t be fooled by the 3V3/5V switch, it’s there just so you can plug
 it directly to an Arduino Uno board – it just selects which of the
 two voltage pins in the Arduino the buttons will close the contact to.</p>
@@ -315,7 +315,7 @@ project.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckm0eluat0002ungpe0qag7h3" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmsi27j30002g0yqa0pb7pnd" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
       
       
       
@@ -356,7 +356,7 @@ a video game I and a few friends made in the old days of 1998-1999, to
 the ESP32.</p>
 <p>I’m using bitluni’s <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
 generate the VGA output, and I’m still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/blog/2021/02/21/ESP32-VGA-output/" title="last post">last post</a>. The only
+with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output/" title="last post">last post</a>. The only
 addition is a little board I made to connect the pins from the ESP32
 devkit to the VGA breakout board without the mess I had in the
 breadboard, and an improvised cardboard box to hold the VGA plug in
@@ -365,11 +365,11 @@ and box when I add joystick input and sound output.</p>
 <p>The code currently renders a static screen with the background filled
 with tiles, some sprites and some foreground tiles. It’s probably a
 reasonable test of how fast things will render:</p>
-<p><img src="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup"></p>
+<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup"></p>
 <p>The game images look a little rough when converted to 64 colors,
 especially since the palette is fixed by the hardware, but I think I
 can get used to it:</p>
-<p><img src="/blog/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game"></p>
+<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game"></p>
 <p>I managed to get a descent render speed after I started writing to the
 screen 4 pixels at a time. The annoying thing about this whole thing
 is that because of the way the ESP32 I2S DMA works, the data in the
@@ -431,7 +431,7 @@ it gets once I remove the restriction on the horizontal alignment.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckm0elub20004ungphdjm6qdl" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckmsi27ji0005g0yqgmp7a5z1" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
       
       
       
@@ -480,9 +480,9 @@ Vittorio, but there’s also
 <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I’ll
 probably check out later.  Here’s one of FabGL’s examples in action
 (pay no attention to the smudges on the monitor, it’s very old):</p>
-<p><img src="/blog/2021/02/21/ESP32-VGA-output/image3.jpg" alt="ESP32 outputting to an old CRT monitor"></p>
+<p><img src="/2021/02/21/ESP32-VGA-output/image3.jpg" alt="ESP32 outputting to an old CRT monitor"></p>
 <p>Here’s a close-up of the ESP32 showing the connected pins.</p>
-<p><img src="/blog/2021/02/21/ESP32-VGA-output/image7.jpg" alt="Showing the connected pins"></p>
+<p><img src="/2021/02/21/ESP32-VGA-output/image7.jpg" alt="Showing the connected pins"></p>
 <p>I’m using the default FabGL pinout, which is:</p>
 <table>
 <thead>
@@ -526,7 +526,7 @@ probably check out later.  Here’s one of FabGL’s examples in action
 </tbody></table>
 <p>And finally, here’s my hacky VGA connector/DAC with 2 bits per color
 channel giving a total of 64 colors:</p>
-<p><img src="/blog/2021/02/21/ESP32-VGA-output/image6.jpg" alt="My homemade VGA connector/DAC"></p>
+<p><img src="/2021/02/21/ESP32-VGA-output/image6.jpg" alt="My homemade VGA connector/DAC"></p>
 <p>The other side of the board is kind of a mess (this was one of my
 first soldering jobs), but it works well enough.  And, before you ask,
 all of the jumpers are inserted all the way in, but some have longer
@@ -540,7 +540,7 @@ see.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/" data-id="ckm0elual0001ungp45bah0d0" data-title="ESP32 VGA output" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/" data-id="ckmsi27iu0001g0yq06gn0m72" data-title="ESP32 VGA output" class="article-share-link">Share</a>
       
       
       
@@ -579,7 +579,7 @@ see.</p>
         <p>I was finally able to get my hands on an STM32! This board (sometimes
 called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip on
 it:</p>
-<p><img src="/blog/2021/02/15/STM32-with-pure-assembly/image1.jpg" alt="ST-Link programmer connected to the Blue Pill"></p>
+<p><img src="/2021/02/15/STM32-with-pure-assembly/image1.jpg" alt="ST-Link programmer connected to the Blue Pill"></p>
 <p>The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of SRAM and
 64KB of flash.  I have great memories of playing with ARM processors
 with the Gameboy Advance (ARM7TDMI) and Nintendo DS (ARM946E-S), so I
@@ -653,7 +653,7 @@ checked.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/" data-id="ckm0elub50005ungp3u7lav3w" data-title="STM32 with pure assembly" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/" data-id="ckmsi27ku000ug0yqh7the311" data-title="STM32 with pure assembly" class="article-share-link">Share</a>
       
       
       
