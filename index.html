@@ -100,9 +100,9 @@
 very long post because there’s a lot of small changes:</p>
 <ul>
 <li>Wiimote support</li>
-<li>new VGA connector with improved DACs</li>
-<li>rewriting of the VGA output code</li>
-<li>created a 6x8 font</li>
+<li>New VGA DACs</li>
+<li>Rewriting the VGA output code</li>
+<li>New font</li>
 </ul>
 <h2 id="Wiimote-Support"><a href="#Wiimote-Support" class="headerlink" title="Wiimote Support"></a>Wiimote Support</h2><p>The game now supports the Wiimote controller (via Bluetooth) using
 takeru’s <a target="_blank" rel="noopener" href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
@@ -143,9 +143,9 @@ and the DAC has to convert these to 4 voltages between 0V and
 <table>
 <thead>
 <tr>
-<th>pin values (input)</th>
+<th>pin values (from ESP32)</th>
 <th>intensity</th>
-<th>VGA voltage (output)</th>
+<th>VGA voltage (to monitor)</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -175,7 +175,7 @@ each color to generate these voltages, or at least something close to
 it:</p>
 <p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
 <p>That’s the DAC. We just have to choose values for R1 and R2 so that
-when Pin1 and Pin2 are high/low we have the desired voltage in output
+when Pin1 and Pin0 are high/low we have the desired voltage in output
 as shown in the table above. (By the way, the 75Ω resistor is there
 for impedance matching with the monitor – I don’t think it’s really
 right, but I don’t know how to match the impedance properly and in any
@@ -238,7 +238,7 @@ of each one.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckmsi27je0004g0yqa735anox" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckmv8w7ae00040uyq9jxtemoq" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
       
       
       
@@ -315,7 +315,7 @@ project.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmsi27j30002g0yqa0pb7pnd" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmv8w7a300020uyqfmf1fi19" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
       
       
       
@@ -431,7 +431,7 @@ it gets once I remove the restriction on the horizontal alignment.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckmsi27ji0005g0yqgmp7a5z1" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckmv8w7aj00050uyqe0pjbt0r" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
       
       
       
@@ -540,7 +540,7 @@ see.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/" data-id="ckmsi27iu0001g0yq06gn0m72" data-title="ESP32 VGA output" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/" data-id="ckmv8w79t00010uyq6a1i9kpo" data-title="ESP32 VGA output" class="article-share-link">Share</a>
       
       
       
@@ -653,7 +653,7 @@ checked.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/" data-id="ckmsi27ku000ug0yqh7the311" data-title="STM32 with pure assembly" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/" data-id="ckmv8w7bh000u0uyq0nbecvpy" data-title="STM32 with pure assembly" class="article-share-link">Share</a>
       
       
       
