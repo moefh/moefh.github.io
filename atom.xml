@@ -3,11 +3,11 @@
   <title>Freeing the Magic Smoke</title>
   
   
-  <link href="http://moefh.gihub.io/atom.xml" rel="self"/>
+  <link href="http://moefh.github.io/atom.xml" rel="self"/>
   
-  <link href="http://moefh.gihub.io/"/>
+  <link href="http://moefh.github.io/"/>
   <updated>2021-04-02T03:32:28.265Z</updated>
-  <id>http://moefh.gihub.io/</id>
+  <id>http://moefh.github.io/</id>
   
   <author>
     <name>MoeFH</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>Homemade ESP32 VGA Boards</title>
-    <link href="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
-    <id>http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
+    <link href="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
+    <id>http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
     <published>2021-04-02T03:33:36.000Z</published>
     <updated>2021-04-02T03:32:28.265Z</updated>
     
@@ -34,18 +34,18 @@
     
     
     
-    <category term="esp32" scheme="http://moefh.gihub.io/tags/esp32/"/>
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
     
-    <category term="vga" scheme="http://moefh.gihub.io/tags/vga/"/>
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
     
-    <category term="perfboard" scheme="http://moefh.gihub.io/tags/perfboard/"/>
+    <category term="perfboard" scheme="http://moefh.github.io/tags/perfboard/"/>
     
   </entry>
   
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 3</title>
-    <link href="http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
-    <id>http://moefh.gihub.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
+    <link href="http://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
+    <id>http://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
     <published>2021-03-27T19:11:51.000Z</published>
     <updated>2021-04-01T23:37:30.115Z</updated>
     
@@ -60,20 +60,20 @@
     
     
     
-    <category term="esp32" scheme="http://moefh.gihub.io/tags/esp32/"/>
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
     
-    <category term="vga" scheme="http://moefh.gihub.io/tags/vga/"/>
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
     
-    <category term="loser-corps" scheme="http://moefh.gihub.io/tags/loser-corps/"/>
+    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
     
-    <category term="wiimote" scheme="http://moefh.gihub.io/tags/wiimote/"/>
+    <category term="wiimote" scheme="http://moefh.github.io/tags/wiimote/"/>
     
   </entry>
   
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 2</title>
-    <link href="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
-    <id>http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
+    <link href="http://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
+    <id>http://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
     <published>2021-03-07T20:02:26.000Z</published>
     <updated>2021-04-01T23:41:33.736Z</updated>
     
@@ -88,20 +88,20 @@
     
     
     
-    <category term="esp32" scheme="http://moefh.gihub.io/tags/esp32/"/>
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
     
-    <category term="vga" scheme="http://moefh.gihub.io/tags/vga/"/>
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
     
-    <category term="loser-corps" scheme="http://moefh.gihub.io/tags/loser-corps/"/>
+    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
     
-    <category term="joystick" scheme="http://moefh.gihub.io/tags/joystick/"/>
+    <category term="joystick" scheme="http://moefh.github.io/tags/joystick/"/>
     
   </entry>
   
   <entry>
     <title>Porting Loser Corps to the ESP32</title>
-    <link href="http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/"/>
-    <id>http://moefh.gihub.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/</id>
+    <link href="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/"/>
+    <id>http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/</id>
     <published>2021-02-28T18:17:35.000Z</published>
     <updated>2021-04-01T23:42:15.105Z</updated>
     
@@ -117,18 +117,18 @@ a video game I and a few friends made in the old days o</summary>
     
     
     
-    <category term="esp32" scheme="http://moefh.gihub.io/tags/esp32/"/>
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
     
-    <category term="vga" scheme="http://moefh.gihub.io/tags/vga/"/>
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
     
-    <category term="loser-corps" scheme="http://moefh.gihub.io/tags/loser-corps/"/>
+    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
     
   </entry>
   
   <entry>
     <title>ESP32 VGA output</title>
-    <link href="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/"/>
-    <id>http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/</id>
+    <link href="http://moefh.github.io/2021/02/21/ESP32-VGA-output/"/>
+    <id>http://moefh.github.io/2021/02/21/ESP32-VGA-output/</id>
     <published>2021-02-21T18:48:01.000Z</published>
     <updated>2021-03-10T01:02:45.303Z</updated>
     
@@ -145,16 +145,16 @@ little </summary>
     
     
     
-    <category term="esp32" scheme="http://moefh.gihub.io/tags/esp32/"/>
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
     
-    <category term="vga" scheme="http://moefh.gihub.io/tags/vga/"/>
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
     
   </entry>
   
   <entry>
     <title>STM32 with pure assembly</title>
-    <link href="http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/"/>
-    <id>http://moefh.gihub.io/2021/02/15/STM32-with-pure-assembly/</id>
+    <link href="http://moefh.github.io/2021/02/15/STM32-with-pure-assembly/"/>
+    <id>http://moefh.github.io/2021/02/15/STM32-with-pure-assembly/</id>
     <published>2021-02-15T22:14:52.000Z</published>
     <updated>2021-04-02T00:02:11.902Z</updated>
     
@@ -170,11 +170,11 @@ called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip o</summary>
     
     
     
-    <category term="stm32" scheme="http://moefh.gihub.io/tags/stm32/"/>
+    <category term="stm32" scheme="http://moefh.github.io/tags/stm32/"/>
     
-    <category term="arm" scheme="http://moefh.gihub.io/tags/arm/"/>
+    <category term="arm" scheme="http://moefh.github.io/tags/arm/"/>
     
-    <category term="assembly" scheme="http://moefh.gihub.io/tags/assembly/"/>
+    <category term="assembly" scheme="http://moefh.github.io/tags/assembly/"/>
     
   </entry>
   
