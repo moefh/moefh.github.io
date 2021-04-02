@@ -4,25 +4,30 @@
   <meta charset="utf-8">
   
   
-  <title>ESP32 VGA output | MoeFH&#39;s Electronic Adventures</title>
+  <title>Homemade ESP32 VGA Boards | MoeFH&#39;s Electronic Adventures</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Some time ago I made a VGA connector with a simple DAC made of resistors to use with old FPGA board, but since the board has very little RAM I wasn’t able to do anything too interesting (the DAC shown">
+  <meta name="description" content="To start experimenting with the networking code of the ESP32 game engine, I made a new board for the ESP32 so I can have two of them running the game and talking to each other.  The new board was supp">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ESP32 VGA output">
-<meta property="og:url" content="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/index.html">
+<meta property="og:title" content="Homemade ESP32 VGA Boards">
+<meta property="og:url" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/index.html">
 <meta property="og:site_name" content="MoeFH&#39;s Electronic Adventures">
-<meta property="og:description" content="Some time ago I made a VGA connector with a simple DAC made of resistors to use with old FPGA board, but since the board has very little RAM I wasn’t able to do anything too interesting (the DAC shown">
+<meta property="og:description" content="To start experimenting with the networking code of the ESP32 game engine, I made a new board for the ESP32 so I can have two of them running the game and talking to each other.  The new board was supp">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/image3.jpg">
-<meta property="og:image" content="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/image7.jpg">
-<meta property="og:image" content="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/image6.jpg">
-<meta property="article:published_time" content="2021-02-21T18:48:01.000Z">
-<meta property="article:modified_time" content="2021-03-10T01:02:45.303Z">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg">
+<meta property="og:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg">
+<meta property="article:published_time" content="2021-04-02T03:33:36.000Z">
+<meta property="article:modified_time" content="2021-04-02T03:32:28.265Z">
 <meta property="article:author" content="MoeFH">
 <meta property="article:tag" content="esp32">
 <meta property="article:tag" content="vga">
+<meta property="article:tag" content="perfboard">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/image3.jpg">
+<meta name="twitter:image" content="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg">
   
     <link rel="alternate" href="/atom.xml" title="MoeFH's Electronic Adventures" type="application/atom+xml">
   
@@ -81,10 +86,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-ESP32-VGA-output" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-Homemade-ESP32-VGA-Boards" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2021/02/21/ESP32-VGA-output/" class="article-date">
-  <time class="dt-published" datetime="2021-02-21T18:48:01.000Z" itemprop="datePublished">2021-02-21</time>
+    <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/" class="article-date">
+  <time class="dt-published" datetime="2021-04-02T03:33:36.000Z" itemprop="datePublished">2021-04-02</time>
 </a>
     
   </div>
@@ -95,7 +100,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      ESP32 VGA output
+      Homemade ESP32 VGA Boards
     </h1>
   
 
@@ -103,84 +108,64 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>Some time ago I made a VGA connector with a simple DAC made of
-resistors to use with old FPGA board, but since the board has very
-little RAM I wasn’t able to do anything <a target="_blank" rel="noopener" href="https://github.com/moefh/fpga-vga-driver">too
-interesting</a> (the DAC shown
-there has only 1 bit per color channel, I later made an improved one
-with 2 bits per channel).  But as it turns out, some crazy people made
-the ESP32 output a VGA signal using I2S – I just tested it and it
-seems to work perfectly!</p>
-<p>I used <a target="_blank" rel="noopener" href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio Di
-Vittorio, but there’s also
-<a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I’ll
-probably check out later.  Here’s one of FabGL’s examples in action
-(pay no attention to the smudges on the monitor, it’s very old):</p>
-<p><img src="/2021/02/21/ESP32-VGA-output/image3.jpg" alt="ESP32 outputting to an old CRT monitor"></p>
-<p>Here’s a close-up of the ESP32 showing the connected pins.</p>
-<p><img src="/2021/02/21/ESP32-VGA-output/image7.jpg" alt="Showing the connected pins"></p>
-<p>I’m using the default FabGL pinout, which is:</p>
+        <p>To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" title="ESP32 game engine">ESP32 game engine</a>, I made
+a new board for the ESP32 so I can have two of them running the game
+and talking to each other.  The new board was supposed to be just a
+copy of the original one, but I discovered a silly mistake I made in
+the original wiring: the red-high and red-low wires were reversed.
+This caused quite a mess in the colors, I’m surprised I didn’t notice
+it before:</p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels"></p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the &quot;P&quot;"></p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch"></p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch"></p>
+<p>The “new dac” label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" title="last post">last post</a>. I’m
+not sure I can see any difference between the old an new DACs, to be
+honest (my phone camera doesn’t help – its automatic color balance
+messes up the colors way more than my DACs, apparently).</p>
+<p>In any case, it’s easy to see the difference between the old and new
+boards. Not only the new board’s images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the “P”
+is clearly fixed – what should be <code>black</code>-&gt;<code>dark red</code>-&gt;<code>medium red</code>-&gt;<code>bright red</code> was wrongly shown as <code>black</code>-&gt;<code>medium red</code>-&gt;<code>dark red</code>-&gt;<code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:</p>
 <table>
 <thead>
 <tr>
-<th align="right">ESP32 pin</th>
-<th>Connection</th>
+<th></th>
+<th>correct gradient</th>
+<th>swapped first and second bits</th>
 </tr>
 </thead>
 <tbody><tr>
-<td align="right">23</td>
-<td>H Sync</td>
+<td>binary</td>
+<td>00 01 10 11</td>
+<td>00 10 01 11</td>
 </tr>
 <tr>
-<td align="right">15</td>
-<td>V Sync</td>
-</tr>
-<tr>
-<td align="right">22</td>
-<td>Red (high bit)</td>
-</tr>
-<tr>
-<td align="right">21</td>
-<td>Red (low bit)</td>
-</tr>
-<tr>
-<td align="right">19</td>
-<td>Green (high bit)</td>
-</tr>
-<tr>
-<td align="right">18</td>
-<td>Green (low bit)</td>
-</tr>
-<tr>
-<td align="right">5</td>
-<td>Blue (high bit)</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td>Blue (low bit)</td>
+<td>decimal</td>
+<td>0  1  2  3</td>
+<td>0  2  1  3</td>
 </tr>
 </tbody></table>
-<p>And finally, here’s my hacky VGA connector/DAC with 2 bits per color
-channel giving a total of 64 colors:</p>
-<p><img src="/2021/02/21/ESP32-VGA-output/image6.jpg" alt="My homemade VGA connector/DAC"></p>
-<p>The other side of the board is kind of a mess (this was one of my
-first soldering jobs), but it works well enough.  And, before you ask,
-all of the jumpers are inserted all the way in, but some have longer
-leads than others – they’re really crappy jumpers!</p>
-<p>I might try to port <a target="_blank" rel="noopener" href="https://github.com/moefh/loser-corps">Loser
-Corps</a> to this thing. No idea
-how well it will work over Wifi, the network code is <em>very</em> simplistic
-and probably doesn’t work well anywhere other than Ethernet. We’ll
-see.</p>
+<p>Of course, since we can select the ESP32 output pins any way we want,
+it’s easy to fix this in software by simply changing the pin
+assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That’s good news for me because I
+don’t feel like making a third board right now.</p>
+<p>And finally, just for reference, here are all of the homemade boards
+I’m using in this project:</p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board"></p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don&#39;t cross, unlike the blue and green ones)"></p>
+<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs"></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/02/21/ESP32-VGA-output/" data-id="ckmzi1kdm0001m1yq4fmx2hep" data-title="ESP32 VGA output" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/04/02/Homemade-ESP32-VGA-Boards/" data-id="ckmzi1kdw0002m1yqbiib0mgb" data-title="Homemade ESP32 VGA Boards" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
 
     </footer>
   </div>
@@ -188,19 +173,10 @@ see.</p>
     
 <nav id="article-nav">
   
-    <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Porting Loser Corps to the ESP32
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/02/15/STM32-with-pure-assembly/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">STM32 with pure assembly</div>
+      <div class="article-nav-title">Porting Loser Corps to the ESP32 - Part 3</div>
     </a>
   
 </nav>

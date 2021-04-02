@@ -16,7 +16,7 @@
 <meta property="og:image" content="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg">
 <meta property="og:image" content="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg">
 <meta property="article:published_time" content="2021-03-07T20:02:26.000Z">
-<meta property="article:modified_time" content="2021-03-10T01:16:11.361Z">
+<meta property="article:modified_time" content="2021-04-01T23:41:33.736Z">
 <meta property="article:author" content="MoeFH">
 <meta property="article:tag" content="esp32">
 <meta property="article:tag" content="vga">
@@ -110,42 +110,39 @@
 <p>(This video shows a slightly older version where collision detection
 was done with the image rectangle, not the character’s clipping
 rectangle, which is why it looks a little wonky in a few places.)</p>
-<p>As the video shows, you can control a character (Loserboy) in a map,
-walking and jumping to your heart’s content. I reworked some parts of
-the movement code, but it feels a lot like the original, although I
-think the jump is not high enough. The collision detection code is
-pretty much untouched, except for what I absolutely had to do to make
-it run in the ESP32, which wasn’t much.</p>
-<p>The joystick I’m using is a common Arduino joystick shield. It’s
+<p>As the video shows, you control a character in a map, walking and
+jumping around.  I reworked some parts of the movement code, but it
+feels a lot like the original, although I think the jump is not high
+enough.  The collision detection is pretty much untouched, except for
+what I absolutely had to do to make it run in the ESP32, which wasn’t
+much.</p>
+<p>The joystick I’m using is a common Arduino joystick shield.  It’s
 pretty cheap and easy to use, but it requires one input pin of the
 ESP32 for each button, and one analog input pin for each direction of
 the stick – it’s really just a bunch of of buttons and potentiometers
 conveniently placed on a PCB:</p>
 <p><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I&#39;m using"></p>
-<p>Don’t be fooled by the 3V3/5V switch, it’s there just so you can plug
-it directly to an Arduino Uno board – it just selects which of the
-two voltage pins in the Arduino the buttons will close the contact to.</p>
 <p>I’ve connected all buttons pins, but the code only uses the C button
 to jump and the X analog stick to move.</p>
 <p>I’ve tried to use a Wiimote nunchuck and a Wiimote classic controller,
 but I didn’t have much success.  These controllers use an I2C
 interface to talk to the Wiimote, so it seems like they should be easy
-to use with the ESP32 – and it works, but it’s very unreliable. The
-controller stops replying for no apparent reason, a lot of times
-requiring an unplug/replug to start working again. I’ve tried it with no
-pullup resistors, 5K pullups and and 10K pullups, with no luck. The
-strangest thing is that it works perfectly with an Arduino Uno (using
-the same exact test code), even with no pullup resistors.  I read
-people saying that the I2C part of the ESP32 Arduino library isn’t
-that great, so maybe that’s the problem?</p>
+to use with the ESP32 – and it actually works, but it’s very
+unreliable.  The controller stops replying for no apparent reason, a
+lot of times requiring an unplug/re-plug to start working again.  I’ve
+tried it with no pullup resistors, 4.7K pullups, 10K pullups, all for
+nothing.  The strangest thing is that it works perfectly with an
+Arduino Uno (using the same exact test code), even with no pullup
+resistors.  I say people saying that the I2C part of the ESP32 Arduino
+library isn’t that great, so maybe that’s the problem?</p>
 <p>Another nice option would be to use the Wiimote itself, which uses
-Bluetooth. That’s probably the next thing I’ll work on in this
+Bluetooth.  That’s probably the next thing I’ll work on in this
 project.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmv8w7a300020uyqfmf1fi19" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
+      <a data-url="http://moefh.gihub.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmzi1ke70004m1yqhmebc1dm" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
       
       
       
@@ -189,7 +186,7 @@ project.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
     </div>
   </div>
 
@@ -199,7 +196,7 @@ project.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 20px;">vga</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
+      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 20px;">vga</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
     </div>
   </div>
 
@@ -208,7 +205,7 @@ project.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
     </div>
   </div>
 
@@ -219,6 +216,10 @@ project.</p>
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/">Homemade ESP32 VGA Boards</a>
+          </li>
         
           <li>
             <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
@@ -234,10 +235,6 @@ project.</p>
         
           <li>
             <a href="/2021/02/21/ESP32-VGA-output/">ESP32 VGA output</a>
-          </li>
-        
-          <li>
-            <a href="/2021/02/15/STM32-with-pure-assembly/">STM32 with pure assembly</a>
           </li>
         
       </ul>
