@@ -4,25 +4,26 @@
   <meta charset="utf-8">
   
   
-  <title>Porting Loser Corps to the ESP32 | moefh.github.io</title>
+  <title>Porting Loser Corps to the ESP32 - Part 4 | moefh.github.io</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="I started porting Loser Corps, a video game I and a few friends made in the old days of 1998-1999, to the ESP32. I’m using bitluni’s ESP32Lib to generate the VGA output, and I’m still using my crappy">
+  <meta name="description" content="More progress in porting Loser Corps to the ESP32 (here&#39;s part 1 of the saga). Working on the game network code, I was able to make two players (each running their own game a separate ESP32) see e">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Porting Loser Corps to the ESP32">
-<meta property="og:url" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/index.html">
+<meta property="og:title" content="Porting Loser Corps to the ESP32 - Part 4">
+<meta property="og:url" content="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/index.html">
 <meta property="og:site_name" content="moefh.github.io">
-<meta property="og:description" content="I started porting Loser Corps, a video game I and a few friends made in the old days of 1998-1999, to the ESP32. I’m using bitluni’s ESP32Lib to generate the VGA output, and I’m still using my crappy">
+<meta property="og:description" content="More progress in porting Loser Corps to the ESP32 (here&#39;s part 1 of the saga). Working on the game network code, I was able to make two players (each running their own game a separate ESP32) see e">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg">
-<meta property="article:published_time" content="2021-02-28T18:17:35.000Z">
-<meta property="article:modified_time" content="2021-04-04T04:09:14.130Z">
+<meta property="og:image" content="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg">
+<meta property="og:image" content="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg">
+<meta property="article:published_time" content="2021-04-04T03:10:58.000Z">
+<meta property="article:modified_time" content="2021-04-04T04:07:20.041Z">
 <meta property="article:author" content="MoeFH">
 <meta property="article:tag" content="esp32">
 <meta property="article:tag" content="vga">
 <meta property="article:tag" content="loser-corps">
+<meta property="article:tag" content="network">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg">
+<meta name="twitter:image" content="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg">
   
     <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
   
@@ -85,10 +86,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-Porting-Loser-Corps-to-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-Porting-Loser-Corps-to-the-ESP32-Part-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" class="article-date">
-  <time class="dt-published" datetime="2021-02-28T18:17:35.000Z" itemprop="datePublished">2021-02-28</time>
+    <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/" class="article-date">
+  <time class="dt-published" datetime="2021-04-04T03:10:58.000Z" itemprop="datePublished">2021-04-04</time>
 </a>
     
   </div>
@@ -99,7 +100,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      Porting Loser Corps to the ESP32
+      Porting Loser Corps to the ESP32 - Part 4
     </h1>
   
 
@@ -107,91 +108,59 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>I started porting <a target="_blank" rel="noopener" href="https://github.com/moefh/loser-corps">Loser Corps</a>,
-a video game I and a few friends made in the old days of 1998-1999, to
-the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.</p>
-<p>I’m using bitluni’s <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
-generate the VGA output, and I’m still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output/" title="last post">last post</a>.  The only new addition is a little
-board I made to connect the pins from the ESP32 devkit to the VGA
-breakout board without the mess I had in the breadboard, and an
-improvised cardboard box to hold the VGA plug in place (it works
-surprisingly well).  I’ll probably make a nicer board and box when I
-add joystick input and sound output.</p>
-<p>The code currently renders a static screen with the background filled
-with tiles, some sprites and some foreground tiles. It’s probably a
-reasonable test of how fast things will render:</p>
-<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup"></p>
-<p>The game images look a little rough when converted to 64 colors,
-especially since the palette is fixed by the hardware, but I think I
-can get used to it:</p>
-<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game"></p>
-<p>I managed to get a descent render speed after I started writing to the
-screen 4 pixels at a time. The annoying thing about this whole thing
-is that because of the way the ESP32 I2S DMA works, the data in the
-framebuffer has to be set in a weird order:</p>
-<table>
-<thead>
-<tr>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>pixels</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>…</td>
-</tr>
-<tr>
-<td>address</td>
-<td>[2]</td>
-<td>[3]</td>
-<td>[0]</td>
-<td>[1]</td>
-<td>[6]</td>
-<td>[7]</td>
-<td>[4]</td>
-<td>[5]</td>
-<td>…</td>
-</tr>
-</tbody></table>
-<p>Another annoying thing is that the VSync and HSync bits for the VGA
-signal have to go inside every pixel in the framebuffer. To make
-things fast, I pre-baked these bits in the image data, which means
-that if I want to change to a VGA mode that happens to have different
-VSync or HSync polarity, I’ll have to re-convert the images and
-recompile everything. Not a big deal, but it’s annoying.</p>
-<p>Currently my code only supports placing images aligned horizontally to
-4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
-the trick of writing 4 pixels at a time, and <em>not</em> clearing the screen
-every frame (since I’m going to overwrite everything anyway), I
-managed to get around 150 frames per second. We’ll have to see how bad
-it gets once I remove the restriction on the horizontal alignment.</p>
-<p>All in all, I’m very pleased with the progress.</p>
+        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+<p>Working on the game network code, I was able to make two players (each
+running their own game a separate ESP32) see each other’s characters:</p>
+<p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg" alt="First player (using the Arduino Joystick)"></p>
+<p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg" alt="Second player (using the Wiimote)."></p>
+<p>They’re using
+<a target="_blank" rel="noopener" href="https://www.espressif.com/en/products/software/esp-now/overview">ESP-NOW</a>
+(a protocol made by Espressif, the makers of ESP32) to communicate.
+Currently code is very simple, it’s really just a proof-of-concept.
+Each ESP32 keeps broadcasting messages containing its character’s
+position and frame.  When it receives a message, it puts a second
+character at the received location with the received frame to
+represent the remote player.</p>
+<p>The network part was much easier than expected, I got it running a
+couple of hours after I was able to get WiFi running inside the game
+(I had researched how to send and receive messages using ESP-NOW prior
+to that).  The hard part was freeing enough memory to get the WiFi
+system to start in the first place.  If you look closely at the
+monitors in the photos, you can see that the image’s borders are cut
+at the sides: the drawing area is only 240x240 pixels (as opposed to
+the usual 320x240).  The monitor still thinks it’s using the old
+resolution, in effect what I did was increase the horizontal front-
+and back-porch of the VGA timing, which decreases the horizontal
+resolution but keeps everything else unchanged (crucially, the hsync
+timing).</p>
+<p>That took care of the RAM, but we also had a ROM problem: with the
+added WiFi library, the program binary itself ended up too big to fit
+the flash (at least with the default Arduino IDE settings). So I
+removed some sprites, an entire tileset (<code>castle</code>) and cut some tiles
+from another tileset (<code>castle3</code>).  To do that I made the <code>conv_spr</code>
+tool (in the <code>conv_img</code> directory in the Github repository) – it’s an
+improvement of the tool I had made before but hadn’t released.</p>
+<p>The nice side of all that work is that now it’s much easier to change
+the resolution with the new VGA code.  It can also select between
+using double framebuffers (as before) or a single framebuffer.  I made
+that when researching ways to decrease VGA memory use – it turns out
+that the game <em>almost</em> runs well enough with a single framebuffer, but
+it’s not quite fast enough to draw the whole screen during
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vertical_blanking_interval">vblank</a>
+(the time when the monitor is not actively drawing the image), so the
+top portion of the screen gets a little messed up if we try.  That’s
+why the solution I chose at the end was to decrease the resolution and
+keep using two framebuffers, but I kept the code to use a single
+framebuffer in case I need it for another project in the future.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckmzi1kef0006m1yq3c1y1w4l" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
+      <a data-url="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/" data-id="ckn2lf38h0000h0yqcm6yaauk" data-title="Porting Loser Corps to the ESP32 - Part 4" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
 
     </footer>
   </div>
@@ -199,19 +168,10 @@ it gets once I remove the restriction on the horizontal alignment.</p>
     
 <nav id="article-nav">
   
-    <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Porting Loser Corps to the ESP32 - Part 2
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/02/21/ESP32-VGA-output/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">ESP32 VGA output</div>
+      <div class="article-nav-title">Homemade ESP32 VGA Boards</div>
     </a>
   
 </nav>
