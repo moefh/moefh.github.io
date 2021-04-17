@@ -6,7 +6,7 @@
   <link href="http://moefh.github.io/atom.xml" rel="self"/>
   
   <link href="http://moefh.github.io/"/>
-  <updated>2021-04-04T04:07:20.041Z</updated>
+  <updated>2021-04-17T17:28:25.355Z</updated>
   <id>http://moefh.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Porting Loser Corps to the ESP32 - Part 5</title>
+    <link href="http://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/"/>
+    <id>http://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/</id>
+    <published>2021-04-17T17:04:59.000Z</published>
+    <updated>2021-04-17T17:28:25.355Z</updated>
+    
+    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>This is just a quick update: I have added shooting to the game.  Youshoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).There can be at most 14 shots active at once, and they do nothing butfly in a straight line until they hit a wall or the edge of the map.</p><p><img src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn&#39;t like moving objects, in reality it&#39;s less blurry than shown here)"></p><p>I also ported the game to use the ESP-IDF framework (as opposed to theArduino framework, which originally used).  I’m trying to see if I candecrease the memory used by the WiFi system so the game can use full320x240 resolution while in networked mode, and the EDP-IDF frameworkhas lots of configuration options.  I haven’t made much progress withit yet: I was just recently able to make the game run at full speed,after finding that I have to set not ony the processor clock to 240MHzbut also the flash SPI clock to 80MHz (apparently the flash speed is abottleneck, which is not surprising since we copy images directly fromflash to the framebuffer).</p><p>As usual, the source is on<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven’twritten this beforem, so from now on I’ll start adding this link toevery post).</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
+      
+    
+    
+    
+    
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
+    
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
+    
+    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
+    
+  </entry>
   
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 4</title>
