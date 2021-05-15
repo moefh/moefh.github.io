@@ -2,11 +2,11 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>moefh.github.io</title>
   
-  <subtitle>Releasing the Magic Smoke</subtitle>
+  <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="http://moefh.github.io/atom.xml" rel="self"/>
   
   <link href="http://moefh.github.io/"/>
-  <updated>2021-04-17T17:28:25.355Z</updated>
+  <updated>2021-05-15T16:00:27.155Z</updated>
   <id>http://moefh.github.io/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Using Wii I2C Controllers on the ESP32</title>
+    <link href="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/"/>
+    <id>http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/</id>
+    <published>2021-05-15T15:38:48.000Z</published>
+    <updated>2021-05-15T16:00:27.155Z</updated>
+    
+    <content type="html"><![CDATA[<p>I wrote a very simple library to make the ESP32 talk via I2C to Wiicontrollers like the Wii Nunchuk and the Wii Classic Controller.</p><p>There are a few libraries around that do this for the Arduino usingthe <a href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, butfor some reason that doesn’t work consistently with the ESP32 and theWii controllers.  So I wrote the I2C communication using the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDFAPI</a>,and it works really well, except that for some reason I wasn’t able tomake it work at 400KHz (which is supposedly what the Wii controllersaccept), only at 100KHz.  That’s a little disappointing, but goodenough for my purposes, which is using the controllers in the ESP32port of Loser Corps.</p><p>While playing with it, I wrote a little test program to display thestate of the connected controller on a small OLED screen (SSD1306),which is controlled using the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306library</a> also via I2C,but using the <code>Wire</code> library:</p><p><img src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler"></p><p>When using the Wii Classic Controller, the screen shows two trianglesthat point on the direction where you move the sticks, growing in sizeas you move the stick farther along.  Pressing each button lights acorresponding character on the screen, and pulling the analog triggersincreases the size of two bars that appear on the left side.</p><p>When using the Wii Nunchuk, the screen shows a single triangle withthe status of the nunchuk stick and three bars to the left that showthe status of the X, Y and Z accelerometer readings.  Pressing C or Zdisplays the corresponding letter on the screen.</p><p>I wrote this small test program mostly for fun, but it tests somethingimportant: that my library, which uses I2C via ESP-IDF, can coexistwith <code>Wire</code> library.  When using them together, you just have to becareful not to use the same ESP32 I2C port with the two libraries atthe same time.  In this program, my library uses I2C port 0 and the<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).</p><p>The source code for the library is here:<a href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;I wrote a very simple library to make the ESP32 talk via I2C to Wii
+controllers like the Wii Nunchuk and the Wii Classic Controller.&lt;/p&gt;
+</summary>
+      
+    
+    
+    
+    
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
+    
+    <category term="i2c" scheme="http://moefh.github.io/tags/i2c/"/>
+    
+    <category term="wii" scheme="http://moefh.github.io/tags/wii/"/>
+    
+    <category term="nunchuk" scheme="http://moefh.github.io/tags/nunchuk/"/>
+    
+  </entry>
   
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 5</title>

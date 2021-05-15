@@ -4,25 +4,25 @@
   <meta charset="utf-8">
   
   
-  <title>Porting Loser Corps to the ESP32 | moefh.github.io</title>
+  <title>Using Wii I2C Controllers on the ESP32 | moefh.github.io</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="I started porting Loser Corps, a video game I and a few friends made in the old days of 1998-1999, to the ESP32. I’m using bitluni’s ESP32Lib to generate the VGA output, and I’m still using my crappy">
+  <meta name="description" content="I wrote a very simple library to make the ESP32 talk via I2C to Wii controllers like the Wii Nunchuk and the Wii Classic Controller. There are a few libraries around that do this for the Arduino using">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Porting Loser Corps to the ESP32">
-<meta property="og:url" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/index.html">
+<meta property="og:title" content="Using Wii I2C Controllers on the ESP32">
+<meta property="og:url" content="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/index.html">
 <meta property="og:site_name" content="moefh.github.io">
-<meta property="og:description" content="I started porting Loser Corps, a video game I and a few friends made in the old days of 1998-1999, to the ESP32. I’m using bitluni’s ESP32Lib to generate the VGA output, and I’m still using my crappy">
+<meta property="og:description" content="I wrote a very simple library to make the ESP32 talk via I2C to Wii controllers like the Wii Nunchuk and the Wii Classic Controller. There are a few libraries around that do this for the Arduino using">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg">
-<meta property="article:published_time" content="2021-02-28T18:17:35.000Z">
-<meta property="article:modified_time" content="2021-04-04T04:09:14.130Z">
+<meta property="og:image" content="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg">
+<meta property="article:published_time" content="2021-05-15T15:38:48.000Z">
+<meta property="article:modified_time" content="2021-05-15T16:00:27.155Z">
 <meta property="article:author" content="MoeFH">
 <meta property="article:tag" content="esp32">
-<meta property="article:tag" content="vga">
-<meta property="article:tag" content="loser-corps">
+<meta property="article:tag" content="i2c">
+<meta property="article:tag" content="wii">
+<meta property="article:tag" content="nunchuk">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg">
+<meta name="twitter:image" content="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg">
   
     <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
   
@@ -85,10 +85,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-Porting-Loser-Corps-to-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-Using-Wii-I2C-Controllers-on-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" class="article-date">
-  <time class="dt-published" datetime="2021-02-28T18:17:35.000Z" itemprop="datePublished">2021-02-28</time>
+    <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/" class="article-date">
+  <time class="dt-published" datetime="2021-05-15T15:38:48.000Z" itemprop="datePublished">2021-05-15</time>
 </a>
     
   </div>
@@ -99,7 +99,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      Porting Loser Corps to the ESP32
+      Using Wii I2C Controllers on the ESP32
     </h1>
   
 
@@ -107,91 +107,50 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>I started porting <a target="_blank" rel="noopener" href="https://github.com/moefh/loser-corps">Loser Corps</a>,
-a video game I and a few friends made in the old days of 1998-1999, to
-the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.</p>
-<p>I’m using bitluni’s <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
-generate the VGA output, and I’m still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output/" title="last post">last post</a>.  The only new addition is a little
-board I made to connect the pins from the ESP32 devkit to the VGA
-breakout board without the mess I had in the breadboard, and an
-improvised cardboard box to hold the VGA plug in place (it works
-surprisingly well).  I’ll probably make a nicer board and box when I
-add joystick input and sound output.</p>
-<p>The code currently renders a static screen with the background filled
-with tiles, some sprites and some foreground tiles. It’s probably a
-reasonable test of how fast things will render:</p>
-<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup"></p>
-<p>The game images look a little rough when converted to 64 colors,
-especially since the palette is fixed by the hardware, but I think I
-can get used to it:</p>
-<p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game"></p>
-<p>I managed to get a descent render speed after I started writing to the
-screen 4 pixels at a time. The annoying thing about this whole thing
-is that because of the way the ESP32 I2S DMA works, the data in the
-framebuffer has to be set in a weird order:</p>
-<table>
-<thead>
-<tr>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-<th><!-- --></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>pixels</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>…</td>
-</tr>
-<tr>
-<td>address</td>
-<td>[2]</td>
-<td>[3]</td>
-<td>[0]</td>
-<td>[1]</td>
-<td>[6]</td>
-<td>[7]</td>
-<td>[4]</td>
-<td>[5]</td>
-<td>…</td>
-</tr>
-</tbody></table>
-<p>Another annoying thing is that the VSync and HSync bits for the VGA
-signal have to go inside every pixel in the framebuffer. To make
-things fast, I pre-baked these bits in the image data, which means
-that if I want to change to a VGA mode that happens to have different
-VSync or HSync polarity, I’ll have to re-convert the images and
-recompile everything. Not a big deal, but it’s annoying.</p>
-<p>Currently my code only supports placing images aligned horizontally to
-4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
-the trick of writing 4 pixels at a time, and <em>not</em> clearing the screen
-every frame (since I’m going to overwrite everything anyway), I
-managed to get around 150 frames per second. We’ll have to see how bad
-it gets once I remove the restriction on the horizontal alignment.</p>
-<p>All in all, I’m very pleased with the progress.</p>
+        <p>I wrote a very simple library to make the ESP32 talk via I2C to Wii
+controllers like the Wii Nunchuk and the Wii Classic Controller.</p>
+<p>There are a few libraries around that do this for the Arduino using
+the <a target="_blank" rel="noopener" href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, but
+for some reason that doesn’t work consistently with the ESP32 and the
+Wii controllers.  So I wrote the I2C communication using the <a target="_blank" rel="noopener" href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDF
+API</a>,
+and it works really well, except that for some reason I wasn’t able to
+make it work at 400KHz (which is supposedly what the Wii controllers
+accept), only at 100KHz.  That’s a little disappointing, but good
+enough for my purposes, which is using the controllers in the ESP32
+port of Loser Corps.</p>
+<p>While playing with it, I wrote a little test program to display the
+state of the connected controller on a small OLED screen (SSD1306),
+which is controlled using the <a target="_blank" rel="noopener" href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306
+library</a> also via I2C,
+but using the <code>Wire</code> library:</p>
+<p><img src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler"></p>
+<p>When using the Wii Classic Controller, the screen shows two triangles
+that point on the direction where you move the sticks, growing in size
+as you move the stick farther along.  Pressing each button lights a
+corresponding character on the screen, and pulling the analog triggers
+increases the size of two bars that appear on the left side.</p>
+<p>When using the Wii Nunchuk, the screen shows a single triangle with
+the status of the nunchuk stick and three bars to the left that show
+the status of the X, Y and Z accelerometer readings.  Pressing C or Z
+displays the corresponding letter on the screen.</p>
+<p>I wrote this small test program mostly for fun, but it tests something
+important: that my library, which uses I2C via ESP-IDF, can coexist
+with <code>Wire</code> library.  When using them together, you just have to be
+careful not to use the same ESP32 I2C port with the two libraries at
+the same time.  In this program, my library uses I2C port 0 and the
+<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).</p>
+<p>The source code for the library is here:
+<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" data-id="ckmzi1kef0006m1yq3c1y1w4l" data-title="Porting Loser Corps to the ESP32" class="article-share-link">Share</a>
+      <a data-url="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/" data-id="ckom9hqy30001j4yqgvcd7fs7" data-title="Using Wii I2C Controllers on the ESP32" class="article-share-link">Share</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wii/" rel="tag">wii</a></li></ul>
 
     </footer>
   </div>
@@ -199,19 +158,10 @@ it gets once I remove the restriction on the horizontal alignment.</p>
     
 <nav id="article-nav">
   
-    <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Porting Loser Corps to the ESP32 - Part 2
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/02/21/ESP32-VGA-output/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">ESP32 VGA output</div>
+      <div class="article-nav-title">Porting Loser Corps to the ESP32 - Part 5</div>
     </a>
   
 </nav>

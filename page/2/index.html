@@ -46,7 +46,7 @@
       </h1>
       
         <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">Releasing the Magic Smoke</a>
+          <a href="/" id="subtitle">The Magic Smoke Has Left the Building</a>
         </h2>
       
     </div>
@@ -76,6 +76,82 @@
 
       <div class="outer">
         <section id="main">
+  
+    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" class="article-date">
+  <time class="dt-published" datetime="2021-03-07T20:02:26.000Z" itemprop="datePublished">2021-03-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/">Porting Loser Corps to the ESP32 - Part 2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>I made some progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+<p>Here’s a demo video (click to open Youtube):</p>
+<p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video"></a></p>
+<p>(This video shows a slightly older version where collision detection
+was done with the image rectangle, not the character’s clipping
+rectangle, which is why it looks a little wonky in a few places.)</p>
+<p>As the video shows, you control a character in a map, walking and
+jumping around.  I reworked some parts of the movement code, but it
+feels a lot like the original, although I think the jump is not high
+enough.  The collision detection is pretty much untouched, except for
+what I absolutely had to do to make it run in the ESP32, which wasn’t
+much.</p>
+<p>The joystick I’m using is a common Arduino joystick shield.  It’s
+pretty cheap and easy to use, but it requires one input pin of the
+ESP32 for each button, and one analog input pin for each direction of
+the stick – it’s really just a bunch of of buttons and
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
+conveniently placed on a PCB:</p>
+<p><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I&#39;m using"></p>
+<p>I’ve connected all buttons pins, but the code only uses the C button
+to jump and the X analog stick to move.</p>
+<p>I’ve tried to use a Wiimote nunchuck and a Wiimote classic controller,
+but I didn’t have much success.  These controllers use an
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
+Wiimote, so it seems like they should be easy to use with the ESP32 –
+and it actually works, but it’s very unreliable.  The controller stops
+replying for no apparent reason, a lot of times requiring an
+unplug/re-plug to start working again.  I’ve tried it with no pullup
+resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
+thing is that it works perfectly with an Arduino Uno (using the same
+exact test code), even with no pullup resistors.  I say people saying
+that the I2C part of the ESP32 Arduino library isn’t that great, so
+maybe that’s the problem?</p>
+<p>Another nice option would be to use the Wiimote itself, which uses
+Bluetooth.  That’s probably the next thing I’ll work on in this
+project.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" data-id="ckmzi1ke70004m1yqhmebc1dm" data-title="Porting Loser Corps to the ESP32 - Part 2" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
   
     <article id="post-Porting-Loser-Corps-to-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
@@ -433,7 +509,7 @@ checked.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wii/" rel="tag">wii</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
     </div>
   </div>
 
@@ -443,7 +519,7 @@ checked.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/network/" style="font-size: 10px;">network</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 20px;">vga</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
+      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/i2c/" style="font-size: 10px;">i2c</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 13.33px;">loser-corps</a> <a href="/tags/network/" style="font-size: 10px;">network</a> <a href="/tags/nunchuk/" style="font-size: 10px;">nunchuk</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 16.67px;">vga</a> <a href="/tags/wii/" style="font-size: 10px;">wii</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
     </div>
   </div>
 
@@ -452,7 +528,7 @@ checked.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
     </div>
   </div>
 
@@ -463,6 +539,10 @@ checked.</p>
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/">Using Wii I2C Controllers on the ESP32</a>
+          </li>
         
           <li>
             <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/">Porting Loser Corps to the ESP32 - Part 5</a>
@@ -478,10 +558,6 @@ checked.</p>
         
           <li>
             <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
-          </li>
-        
-          <li>
-            <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/">Porting Loser Corps to the ESP32 - Part 2</a>
           </li>
         
       </ul>
