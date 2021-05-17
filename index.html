@@ -77,6 +77,89 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-6" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/" class="article-date">
+  <time class="dt-published" datetime="2021-05-17T02:28:12.000Z" itemprop="datePublished">2021-05-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/">Porting Loser Corps to the ESP32 - Part 6</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
+<p>The game now runs with networking enabled while using the full 320x240
+resolution:</p>
+<p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling a
+character (note also the Wii Classic
+Controller)"></p>
+<p>To fit WiFi and the two 320x240 framebuffers in memory, I had to make
+some changes: first, don’t use Bluetooth – so the Wiimote is out.
+Luckily I now can use the Wii Classic Controller (as shown in the
+picture) or Wii Nunchuk, so that’s not a big deal.</p>
+<p>Second, I had to decrease the number of transmit and receive buffers
+used by the WiFi library.  This can’t be changed in with the Arduino
+Core for the ESP32, so I can’t use the Arduino IDE for this.  Using
+the ESP-IDF framework, this (and a lot more) can be changed with
+<code>idf.py menuconfig</code>:</p>
+<p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers"></p>
+<p>Thankfully it’s not too much of a hassle to use the same code with the
+two APIs (which is not that surprising, since the Arduino Core is just
+an added layer on top of the ESP-IDF).  The largest hurdle was to
+learn how to set the CPU clock using the ESP-IDF (it’s a lot more
+involved than I thought, I ended up lifting code from the Arduino
+Core) and to support the Wiimote library, which uses the Bluetooth API
+from the Arduino Core (so once more I lifted some code from there).</p>
+<p>In the end, it was fun and I learned a little bit about FreeRTOS
+(which the Arduino Core completely hides) in order to run my code on
+one of the CPUs of the ESP32 and let the WiFi and other stuff use the
+other one.</p>
+<p>The other change in the game since the last update post was the
+addition of Wii Nunchuk and Classic Controller support via I2C with my
+<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>
+library.</p>
+<p>After plugging the library to the game code, I noticed that sometimes
+the I2C read from the controller gets stuck for a little bit.  Usually
+that’s not a big problem, but for this game any hiccup is really
+noticeable and annoying (the engine <em>really</em> wants to run at 60fps).
+So I had to add some functions to the library to run a loop that reads
+the controller state in a different CPU core than the game engine, and
+it ended up working really well.</p>
+<p>The source code for the version of the game that uses the Arduino API
+is here:
+<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. I
+haven’t published the version using the ESP-IDF yet, but it just adds
+some stuff to compile under ESP-IDF.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/" data-id="ckorzqo5a00005hyqebf09bqr" data-title="Porting Loser Corps to the ESP32 - Part 6" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp-now/" rel="tag">esp-now</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Using-Wii-I2C-Controllers-on-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/" class="article-date">
@@ -387,177 +470,6 @@ I’m using in this project:</p>
 
 
   
-    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" class="article-date">
-  <time class="dt-published" datetime="2021-03-27T19:11:51.000Z" itemprop="datePublished">2021-03-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
-<p>Even though there’s nothing <em>really</em> exciting to report, this is a
-very long post because there’s a lot of small changes:</p>
-<ul>
-<li>Wiimote support</li>
-<li>New VGA DACs</li>
-<li>Rewriting the VGA output code</li>
-<li>New font</li>
-</ul>
-<h2 id="Wiimote-Support"><a href="#Wiimote-Support" class="headerlink" title="Wiimote Support"></a>Wiimote Support</h2><p>The game now supports the Wiimote controller (via Bluetooth) using
-takeru’s <a target="_blank" rel="noopener" href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
-to make a very small change to use it: I added a <code>void *</code> parameter to
-the callback function, so it can update the state of the controller
-object without forcing it to refer to the global binding.</p>
-<p>The library works perfectly, the only slightly annoying thing is that
-I haven’t figured out how to permanently pair the controller with the
-ESP32, so every time the ESP32 restarts you have to press the Wiimote
-buttons 1 and 2 at the same time to make the Bluetooth connection. Not
-a big deal, but it could be better.</p>
-<h2 id="New-VGA-DACs"><a href="#New-VGA-DACs" class="headerlink" title="New VGA DACs"></a>New VGA DACs</h2><p>I made a new VGA connector with new digital-to-analog converters
-(DACs). The old ones are slightly wonky because I didn’t have
-resistors with good values when I made it, so I finally got some new
-resistors and made a new one:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs"></p>
-<p>For comparison, here’s the old one:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs"></p>
-<p>To see why the new DACs are better than the old ones, we have to talk
-about how the VGA color signal is generated.  The monitor wants to
-receive each color component (Red, Green, Blue) in their own wire,
-with a voltage between 0V and 0.7V indicating its intensity.  To
-produce an image, the voltage has to be changed as the monitor sweeps
-the screen to draw the pixels: each pixel is drawn with the RGB
-intensity corresponding to the voltage of the red, green and blue
-wires at the time it’s being drawn.</p>
-<p>The ESP32 only has 2 internal DAC outputs, so we can’t use them to
-create the 3 voltages we need for the RGB wires (even if it had 3, its
-DACs aren’t fast enough to generate the signal we need at over
-12MHz).  So we make the ESP32 output each color component as multiple
-digital pins: in our case, we use 2 pins per component. Since a
-digital pin has two logical values (0 and 1), each component has 4
-possible combinations (00, 01, 10, 11), and the DAC has to convert
-these to 4 voltages between 0V and 0.7V. Ideally, we’d like to map
-them like this:</p>
-<table>
-<thead>
-<tr>
-<th>pin values (from ESP32)</th>
-<th>intensity</th>
-<th>output voltage (to VGA monitor)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>00</td>
-<td>0%</td>
-<td>0V</td>
-</tr>
-<tr>
-<td>01</td>
-<td>33%</td>
-<td>0.23V</td>
-</tr>
-<tr>
-<td>10</td>
-<td>67%</td>
-<td>0.47V</td>
-</tr>
-<tr>
-<td>11</td>
-<td>100%</td>
-<td>0.7V</td>
-</tr>
-</tbody></table>
-<p>The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
-(logical 0), so we can build a small circuit connecting them to
-resistors to generate the desired output voltages:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p>
-<p>That’s the DAC. We just have to choose values for R1 and R2 so that
-when Pin1 and Pin2 are high/low we have the desired voltage in output
-as shown in the table above. (By the way, the 75Ω resistor is there
-for impedance matching with the monitor – I don’t think it’s really
-right, but I don’t know how to match the impedance properly).</p>
-<p>The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
-available at the time. The new DAC has 1KΩ and 470Ω, which outputs
-voltages closer to what we want:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)"></p>
-<p>The dotted lines show the theoretical best values for each pin value
-except for <code>00</code>, which has the trivial-to-generate voltage level of
-0V.  The new DAC is overall closer to the theoretical best, but most
-importantly, it has more consistent spacing between the levels, while
-the old DAC has the interval between 01 and 10 smaller then the other
-ones.</p>
-<p>I’m not sure the image result is that different, but for the record
-here’s a photo of the game running with the new DACs:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p>
-<h2 id="Rewriting-the-VGA-Output-Code"><a href="#Rewriting-the-VGA-Output-Code" class="headerlink" title="Rewriting the VGA Output Code"></a>Rewriting the VGA Output Code</h2><p>I ended up rewriting the VGA output code. I was using bitluni’s
-excellent <a target="_blank" rel="noopener" href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
-library does a lot of stuff we don’t need. That makes the code larger
-and also more complicated: when reading the code, I had trouble
-following exactly how things are done with the code written in C++
-with multiple inheritance.</p>
-<p>So to make sure I understood every detail, I ended up rewriting the
-code in plain C style. My code supports only double-buffered output,
-and changing the resolution requires altering the appropriate
-constants by hand (I might make it easier to change it if I end up
-using this code for something else).  It also doesn’t have any drawing
-API, all drawing must be done by writing directly to the framebuffer
-– which suits the game just fine, because I was already doing that
-with ESP32Lib.</p>
-<p>My only improvement over ESP32Lib was making the I2S system trigger an
-interrupt at the end of each frame (the interrupy simply increments a
-frame counter). With that, the main game loop can now wait for the end
-of the frame to swap the framebuffers and start drawing again
-(basically a vsync). That removes the annoying horizontal line from
-the screen which happens when the image is updated while it’s being
-drawn, and also forces a constant framerate (that’s why that photo
-above shows 60fps).</p>
-<p>It’s still possible to disable the vsync (returning to the old
-variable framerate and annoying horizontal line), which I do
-occasionally to check the performance of the game.</p>
-<h2 id="New-Font"><a href="#New-Font" class="headerlink" title="New Font"></a>New Font</h2><p>Since I’m not using ESP32Lib anymore, I had to make my own font and
-font-rendering code (which is pretty unoptimized, but for now it
-doesn’t matter since I’m only using text for debugging).  I used
-<a target="_blank" rel="noopener" href="https://krita.org/en/">Krita</a> to draw the font because it’s easier to
-draw pixel-by-pixel with it than with Gimp.</p>
-<p>Here’s an image of the 6x8 font:</p>
-<p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p>
-<p>(The yellow/greenish background is what I used when drawing the font.)</p>
-<h2 id="Next-Steps"><a href="#Next-Steps" class="headerlink" title="Next Steps"></a>Next Steps</h2><p>I’m not sure what I’ll do next: probably either sound or network. For
-network, I haven’t even decided if I’ll use ESP32’s “ESP-NOW” protocol
-or normal WiFi/IP, but it will be fun to investigate the pros and cons
-of each one.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" data-id="ckmzi1keb0005m1yqckcpdhk4" data-title="Porting Loser Corps to the ESP32 - Part 3" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -576,7 +488,7 @@ of each one.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wii/" rel="tag">wii</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp-now/" rel="tag">esp-now</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wii/" rel="tag">wii</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
     </div>
   </div>
 
@@ -586,7 +498,7 @@ of each one.</p>
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/i2c/" style="font-size: 10px;">i2c</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 13.33px;">loser-corps</a> <a href="/tags/network/" style="font-size: 10px;">network</a> <a href="/tags/nunchuk/" style="font-size: 10px;">nunchuk</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 16.67px;">vga</a> <a href="/tags/wii/" style="font-size: 10px;">wii</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
+      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp-now/" style="font-size: 10px;">esp-now</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/i2c/" style="font-size: 10px;">i2c</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/network/" style="font-size: 12.5px;">network</a> <a href="/tags/nunchuk/" style="font-size: 10px;">nunchuk</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 17.5px;">vga</a> <a href="/tags/wii/" style="font-size: 10px;">wii</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
     </div>
   </div>
 
@@ -608,6 +520,10 @@ of each one.</p>
       <ul>
         
           <li>
+            <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/">Porting Loser Corps to the ESP32 - Part 6</a>
+          </li>
+        
+          <li>
             <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/">Using Wii I2C Controllers on the ESP32</a>
           </li>
         
@@ -621,10 +537,6 @@ of each one.</p>
         
           <li>
             <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/">Homemade ESP32 VGA Boards</a>
-          </li>
-        
-          <li>
-            <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/">Porting Loser Corps to the ESP32 - Part 3</a>
           </li>
         
       </ul>

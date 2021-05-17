@@ -6,7 +6,7 @@
   <link href="http://moefh.github.io/atom.xml" rel="self"/>
   
   <link href="http://moefh.github.io/"/>
-  <updated>2021-05-15T16:00:27.155Z</updated>
+  <updated>2021-05-17T02:34:27.014Z</updated>
   <id>http://moefh.github.io/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Porting Loser Corps to the ESP32 - Part 6</title>
+    <link href="http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/"/>
+    <id>http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/</id>
+    <published>2021-05-17T02:28:12.000Z</published>
+    <updated>2021-05-17T02:34:27.014Z</updated>
+    
+    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>The game now runs with networking enabled while using the full 320x240resolution:</p><p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling acharacter (note also the Wii ClassicController)"></p><p>To fit WiFi and the two 320x240 framebuffers in memory, I had to makesome changes: first, don’t use Bluetooth – so the Wiimote is out.Luckily I now can use the Wii Classic Controller (as shown in thepicture) or Wii Nunchuk, so that’s not a big deal.</p><p>Second, I had to decrease the number of transmit and receive buffersused by the WiFi library.  This can’t be changed in with the ArduinoCore for the ESP32, so I can’t use the Arduino IDE for this.  Usingthe ESP-IDF framework, this (and a lot more) can be changed with<code>idf.py menuconfig</code>:</p><p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers"></p><p>Thankfully it’s not too much of a hassle to use the same code with thetwo APIs (which is not that surprising, since the Arduino Core is justan added layer on top of the ESP-IDF).  The largest hurdle was tolearn how to set the CPU clock using the ESP-IDF (it’s a lot moreinvolved than I thought, I ended up lifting code from the ArduinoCore) and to support the Wiimote library, which uses the Bluetooth APIfrom the Arduino Core (so once more I lifted some code from there).</p><p>In the end, it was fun and I learned a little bit about FreeRTOS(which the Arduino Core completely hides) in order to run my code onone of the CPUs of the ESP32 and let the WiFi and other stuff use theother one.</p><p>The other change in the game since the last update post was theaddition of Wii Nunchuk and Classic Controller support via I2C with my<a href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>library.</p><p>After plugging the library to the game code, I noticed that sometimesthe I2C read from the controller gets stuck for a little bit.  Usuallythat’s not a big problem, but for this game any hiccup is reallynoticeable and annoying (the engine <em>really</em> wants to run at 60fps).So I had to add some functions to the library to run a loop that readsthe controller state in a different CPU core than the game engine, andit ended up working really well.</p><p>The source code for the version of the game that uses the Arduino APIis here:<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. Ihaven’t published the version using the ESP-IDF yet, but it just addssome stuff to compile under ESP-IDF.</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
+      
+    
+    
+    
+    
+    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
+    
+    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
+    
+    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
+    
+    <category term="network" scheme="http://moefh.github.io/tags/network/"/>
+    
+    <category term="esp-now" scheme="http://moefh.github.io/tags/esp-now/"/>
+    
+  </entry>
   
   <entry>
     <title>Using Wii I2C Controllers on the ESP32</title>
