@@ -1,295 +1,841 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>moefh.github.io</title>
-  
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
-  <link href="http://moefh.github.io/atom.xml" rel="self"/>
-  
-  <link href="http://moefh.github.io/"/>
-  <updated>2021-05-17T02:34:27.014Z</updated>
-  <id>http://moefh.github.io/</id>
-  
+  <link href="http://raspberrypi:8081/atom.xml" rel="self"/>
+  <link href="http://raspberrypi:8081/"/>
+  <updated>2021-05-23T19:49:31.000</updated>
+  <id>http://raspberrypi:8081/</id>
   <author>
     <name>MoeFH</name>
-    
   </author>
-  
-  <generator uri="https://hexo.io/">Hexo</generator>
-  
+  <generator uri="https://moefh.github.io/">Bloog</generator>
+  <entry>
+    <title>Porting Loser Corps to the ESP32 - Part 7</title>
+    <link href="http://raspberrypi:8081/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/"/>
+    <id>http://raspberrypi:8081/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/</id>
+    <published>2021-05-23T19:49:31.000</published>
+    <updated>2021-05-23T19:49:31.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+The game now sends shots over the network, so players can see each
+other's shots:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg"><span class="image-caption">Two players shooting</span></span>
+
+<p>
+(Please excuse me for not showing the two systems and screens
+side-by-side, it's a pain to move everything around only to take a
+quick picture.)
+</p>
+
+<p>
+Another change: the game runs at 320x240 with WiFi enabled even when
+compiled under the Arduino IDE, since I found out how to decrease the
+number of WiFi buffers without recompiling the ESP-IDF WiFi component.
+It turns out that the number of rx/tx buffers used in WiFi is set in
+the struct returned by <code>WIFI_INIT_CONFIG_DEFAULT()</code>, which initializes
+the fields to values defined in the WiFi component configuration.
+Decreasing the values before passing the struct to <code>esp_wifi_init()</code>
+does the trick.
+</p>
+
+<p>
+To make it work in the Arduino IDE, I just had to stop using the
+Arduino <code>WiFi</code> object and use the ESP-IDF API directly.  One small
+snag I ran into was that the ESP-IDF version used by the Arduino Core
+is pretty old, and to initialize the network you had to call
+<code>tcpip_adapter_init()</code> instead of the current <code>esp_netif_init()</code>.
+Once I solved that, the network code compiles and runs with no
+problems.  There's just an annoying error that pops out in the serial
+complaining that I haven't created an event loop, which I think is
+required for the Arduino Core <code>WiFi</code> object to receive WiFi events.
+The game seems to run fine without it, though.
+</p>
+
+<p>
+As usual, the source code is here:
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>
+</p>]]></content>
+  </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 6</title>
-    <link href="http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/"/>
-    <id>http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/</id>
-    <published>2021-05-17T02:28:12.000Z</published>
-    <updated>2021-05-17T02:34:27.014Z</updated>
-    
-    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>The game now runs with networking enabled while using the full 320x240resolution:</p><p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling acharacter (note also the Wii ClassicController)"></p><p>To fit WiFi and the two 320x240 framebuffers in memory, I had to makesome changes: first, don’t use Bluetooth – so the Wiimote is out.Luckily I now can use the Wii Classic Controller (as shown in thepicture) or Wii Nunchuk, so that’s not a big deal.</p><p>Second, I had to decrease the number of transmit and receive buffersused by the WiFi library.  This can’t be changed in with the ArduinoCore for the ESP32, so I can’t use the Arduino IDE for this.  Usingthe ESP-IDF framework, this (and a lot more) can be changed with<code>idf.py menuconfig</code>:</p><p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers"></p><p>Thankfully it’s not too much of a hassle to use the same code with thetwo APIs (which is not that surprising, since the Arduino Core is justan added layer on top of the ESP-IDF).  The largest hurdle was tolearn how to set the CPU clock using the ESP-IDF (it’s a lot moreinvolved than I thought, I ended up lifting code from the ArduinoCore) and to support the Wiimote library, which uses the Bluetooth APIfrom the Arduino Core (so once more I lifted some code from there).</p><p>In the end, it was fun and I learned a little bit about FreeRTOS(which the Arduino Core completely hides) in order to run my code onone of the CPUs of the ESP32 and let the WiFi and other stuff use theother one.</p><p>The other change in the game since the last update post was theaddition of Wii Nunchuk and Classic Controller support via I2C with my<a href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>library.</p><p>After plugging the library to the game code, I noticed that sometimesthe I2C read from the controller gets stuck for a little bit.  Usuallythat’s not a big problem, but for this game any hiccup is reallynoticeable and annoying (the engine <em>really</em> wants to run at 60fps).So I had to add some functions to the library to run a loop that readsthe controller state in a different CPU core than the game engine, andit ended up working really well.</p><p>The source code for the version of the game that uses the Arduino APIis here:<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. Ihaven’t published the version using the ESP-IDF yet, but it just addssome stuff to compile under ESP-IDF.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
-    <category term="network" scheme="http://moefh.github.io/tags/network/"/>
-    
-    <category term="esp-now" scheme="http://moefh.github.io/tags/esp-now/"/>
-    
+    <link href="http://raspberrypi:8081/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/"/>
+    <id>http://raspberrypi:8081/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/</id>
+    <published>2021-05-16T23:28:12.000</published>
+    <updated>2021-05-16T23:28:12.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+The game now runs with networking enabled while using the full 320x240
+resolution:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg"><span class="image-caption">Two ESP32s talking to each other via ESP-NOW, each one controlling a
+character<br>(note also the Wii Classic
+Controller)</span></span>
+
+<p>
+To fit WiFi and the two 320x240 framebuffers in memory, I had to make
+some changes: first, don't use Bluetooth -- so the Wiimote is out.
+Luckily I now can use the Wii Classic Controller (as shown in the
+picture) or Wii Nunchuk, so that's not a big deal.
+</p>
+
+<p>
+Second, I had to decrease the number of transmit and receive buffers
+used by the WiFi library.  This can't be changed in with the Arduino
+Core for the ESP32, so I can't use the Arduino IDE for this.  Using
+the ESP-IDF framework, this (and a lot more) can be changed with
+<code>idf.py menuconfig</code>:
+</p>
+
+<span class="image"><img width="820" height="515" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png"><span class="image-caption">Adjusting the number of WiFi receive buffers</span></span>
+
+<p>
+Thankfully it's not too much of a hassle to use the same code with the
+two APIs (which is not that surprising, since the Arduino Core is just
+an added layer on top of the ESP-IDF).  The largest hurdle was to
+learn how to set the CPU clock using the ESP-IDF (it's a lot more
+involved than I thought, I ended up lifting code from the Arduino
+Core) and to support the Wiimote library, which uses the Bluetooth API
+from the Arduino Core (so once more I lifted some code from there).
+</p>
+
+<p>
+In the end, it was fun and I learned a little bit about FreeRTOS
+(which the Arduino Core completely hides) in order to run my code on
+one of the CPUs of the ESP32 and let the WiFi and other stuff use the
+other one.
+</p>
+
+<p>
+The other change in the game since the last update post was the
+addition of Wii Nunchuk and Classic Controller support via I2C with my
+<a href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>
+library.
+</p>
+
+<p>
+After plugging the library to the game code, I noticed that sometimes
+the I2C read from the controller gets stuck for a little bit.  Usually
+that's not a big problem, but for this game any hiccup is really
+noticeable and annoying (the engine <b>really</b> wants to run at 60fps).
+So I had to add some functions to the library to run a loop that reads
+the controller state in a different CPU core than the game engine, and
+it ended up working really well.
+</p>
+
+<p>
+The source code for the version of the game that uses the Arduino API
+is here:
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. I
+haven't published the version using the ESP-IDF yet, but it just adds
+some stuff to compile under ESP-IDF.
+</p>
+
+<p>
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Using Wii I2C Controllers on the ESP32</title>
-    <link href="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/"/>
-    <id>http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/</id>
-    <published>2021-05-15T15:38:48.000Z</published>
-    <updated>2021-05-15T16:00:27.155Z</updated>
-    
-    <content type="html"><![CDATA[<p>I wrote a very simple library to make the ESP32 talk via I2C to Wiicontrollers like the Wii Nunchuk and the Wii Classic Controller.</p><p>There are a few libraries around that do this for the Arduino usingthe <a href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, butfor some reason that doesn’t work consistently with the ESP32 and theWii controllers.  So I wrote the I2C communication using the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDFAPI</a>,and it works really well, except that for some reason I wasn’t able tomake it work at 400KHz (which is supposedly what the Wii controllersaccept), only at 100KHz.  That’s a little disappointing, but goodenough for my purposes, which is using the controllers in the ESP32port of Loser Corps.</p><p>While playing with it, I wrote a little test program to display thestate of the connected controller on a small OLED screen (SSD1306),which is controlled using the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306library</a> also via I2C,but using the <code>Wire</code> library:</p><p><img src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler"></p><p>When using the Wii Classic Controller, the screen shows two trianglesthat point on the direction where you move the sticks, growing in sizeas you move the stick farther along.  Pressing each button lights acorresponding character on the screen, and pulling the analog triggersincreases the size of two bars that appear on the left side.</p><p>When using the Wii Nunchuk, the screen shows a single triangle withthe status of the nunchuk stick and three bars to the left that showthe status of the X, Y and Z accelerometer readings.  Pressing C or Zdisplays the corresponding letter on the screen.</p><p>I wrote this small test program mostly for fun, but it tests somethingimportant: that my library, which uses I2C via ESP-IDF, can coexistwith <code>Wire</code> library.  When using them together, you just have to becareful not to use the same ESP32 I2C port with the two libraries atthe same time.  In this program, my library uses I2C port 0 and the<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).</p><p>The source code for the library is here:<a href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a></p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;I wrote a very simple library to make the ESP32 talk via I2C to Wii
-controllers like the Wii Nunchuk and the Wii Classic Controller.&lt;/p&gt;
-</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="i2c" scheme="http://moefh.github.io/tags/i2c/"/>
-    
-    <category term="wii" scheme="http://moefh.github.io/tags/wii/"/>
-    
-    <category term="nunchuk" scheme="http://moefh.github.io/tags/nunchuk/"/>
-    
+    <link href="http://raspberrypi:8081/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/"/>
+    <id>http://raspberrypi:8081/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/</id>
+    <published>2021-05-15T12:38:48.000</published>
+    <updated>2021-05-15T12:38:48.000</updated>
+    <content type="html"><![CDATA[<p>
+I wrote a very simple library to make the ESP32 talk via I2C to Wii
+controllers like the Wii Nunchuk and the Wii Classic Controller.
+</p>
+
+<p>
+There are a few libraries around that do this for the Arduino using
+the <a href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, but
+for some reason that doesn't work consistently with the ESP32 and the
+Wii controllers.  So I wrote the I2C communication using the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDF
+API</a>,
+and it works really well, except that for some reason I wasn't able to
+make it work at 400KHz (which is supposedly what the Wii controllers
+accept), only at 100KHz.  That's a little disappointing, but good
+enough for my purposes, which is using the controllers in the ESP32
+port of Loser Corps.
+</p>
+
+<p>
+While playing with it, I wrote a little test program to display the
+state of the connected controller on a small OLED screen (SSD1306),
+which is controlled using the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306
+library</a> also via I2C,
+but using the <code>Wire</code> library:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg"><span class="image-caption">Testing the Wii Classic Controler</span></span>
+
+<p>
+When using the Wii Classic Controller, the screen shows two triangles
+that point on the direction where you move the sticks, growing in size
+as you move the stick farther along.  Pressing each button lights a
+corresponding character on the screen, and pulling the analog triggers
+increases the size of two bars that appear on the left side.
+</p>
+
+<p>
+When using the Wii Nunchuk, the screen shows a single triangle with
+the status of the nunchuk stick and three bars to the left that show
+the status of the X, Y and Z accelerometer readings.  Pressing C or Z
+displays the corresponding letter on the screen.
+</p>
+
+<p>
+I wrote this small test program mostly for fun, but it tests something
+important: that my library, which uses I2C via ESP-IDF, can coexist
+with <code>Wire</code> library.  When using them together, you just have to be
+careful not to use the same ESP32 I2C port with the two libraries at
+the same time.  In this program, my library uses I2C port 0 and the
+<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).
+</p>
+
+<p>
+The source code for the library is here:
+<a href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a>
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 5</title>
-    <link href="http://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/"/>
-    <id>http://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/</id>
-    <published>2021-04-17T17:04:59.000Z</published>
-    <updated>2021-04-17T17:28:25.355Z</updated>
-    
-    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>This is just a quick update: I have added shooting to the game.  Youshoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).There can be at most 14 shots active at once, and they do nothing butfly in a straight line until they hit a wall or the edge of the map.</p><p><img src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn&#39;t like moving objects, in reality it&#39;s less blurry than shown here)"></p><p>I also ported the game to use the ESP-IDF framework (as opposed to theArduino framework, which originally used).  I’m trying to see if I candecrease the memory used by the WiFi system so the game can use full320x240 resolution while in networked mode, and the EDP-IDF frameworkhas lots of configuration options.  I haven’t made much progress withit yet: I was just recently able to make the game run at full speed,after finding that I have to set not ony the processor clock to 240MHzbut also the flash SPI clock to 80MHz (apparently the flash speed is abottleneck, which is not surprising since we copy images directly fromflash to the framebuffer).</p><p>As usual, the source is on<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven’twritten this beforem, so from now on I’ll start adding this link toevery post).</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
+    <link href="http://raspberrypi:8081/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/"/>
+    <id>http://raspberrypi:8081/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/</id>
+    <published>2021-04-17T14:04:59.000</published>
+    <updated>2021-04-17T14:04:59.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+This is just a quick update: I have added shooting to the game.  You
+shoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).
+There can be at most 14 shots active at once, and they do nothing but
+fly in a straight line until they hit a wall or the edge of the map.
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg"><span class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects,<br>in
+ reality it's less blurry than shown
+ here)</span></span>
+
+<p>
+I also ported the game to use the ESP-IDF framework (as opposed to the
+Arduino framework, which originally used).  I'm trying to see if I can
+decrease the memory used by the WiFi system so the game can use full
+320x240 resolution while in networked mode, and the EDP-IDF framework
+has lots of configuration options.  I haven't made much progress with
+it yet: I was just recently able to make the game run at full speed,
+after finding that I have to set not ony the processor clock to 240MHz
+but also the flash SPI clock to 80MHz (apparently the flash speed is a
+bottleneck, which is not surprising since we copy images directly from
+flash to the framebuffer).
+</p>
+
+<p>
+As usual, the source is on
+<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven't
+written this before, so from now on I'll start adding this link to
+every post).
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 4</title>
-    <link href="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/"/>
-    <id>http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/</id>
-    <published>2021-04-04T03:10:58.000Z</published>
-    <updated>2021-04-04T04:07:20.041Z</updated>
-    
-    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>Working on the game network code, I was able to make two players (eachrunning their own game a separate ESP32) see each other’s characters:</p><p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg" alt="First player (using the Arduino Joystick)"></p><p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg" alt="Second player (using the Wiimote)."></p><p>They’re using<a href="https://www.espressif.com/en/products/software/esp-now/overview">ESP-NOW</a>(a protocol made by Espressif, the makers of ESP32) to communicate.Currently code is very simple, it’s really just a proof-of-concept.Each ESP32 keeps broadcasting messages containing its character’sposition and frame.  When it receives a message, it puts a secondcharacter at the received location with the received frame torepresent the remote player.</p><p>The network part was much easier than expected, I got it running acouple of hours after I was able to get WiFi running inside the game(I had researched how to send and receive messages using ESP-NOW priorto that).  The hard part was freeing enough memory to get the WiFisystem to start in the first place.  If you look closely at themonitors in the photos, you can see that the image’s borders are cutat the sides: the drawing area is only 240x240 pixels (as opposed tothe usual 320x240).  The monitor still thinks it’s using the oldresolution, in effect what I did was increase the horizontal front-and back-porch of the VGA timing, which decreases the horizontalresolution but keeps everything else unchanged (crucially, the hsynctiming).</p><p>That took care of the RAM, but we also had a ROM problem: with theadded WiFi library, the program binary itself ended up too big to fitthe flash (at least with the default Arduino IDE settings). So Iremoved some sprites, an entire tileset (<code>castle</code>) and cut some tilesfrom another tileset (<code>castle3</code>).  To do that I made the <code>conv_spr</code>tool (in the <code>conv_img</code> directory in the Github repository) – it’s animprovement of the tool I had made before but hadn’t released.</p><p>The nice side of all that work is that now it’s much easier to changethe resolution with the new VGA code.  It can also select betweenusing double framebuffers (as before) or a single framebuffer.  I madethat when researching ways to decrease VGA memory use – it turns outthat the game <em>almost</em> runs well enough with a single framebuffer, butit’s not quite fast enough to draw the whole screen during<a href="https://en.wikipedia.org/wiki/Vertical_blanking_interval">vblank</a>(the time when the monitor is not actively drawing the image), so thetop portion of the screen gets a little messed up if we try.  That’swhy the solution I chose at the end was to decrease the resolution andkeep using two framebuffers, but I kept the code to use a singleframebuffer in case I need it for another project in the future.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
-    <category term="network" scheme="http://moefh.github.io/tags/network/"/>
-    
+    <link href="http://raspberrypi:8081/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/"/>
+    <id>http://raspberrypi:8081/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/</id>
+    <published>2021-04-04T00:10:58.000</published>
+    <updated>2021-04-04T00:10:58.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+Working on the game network code, I was able to make two players (each
+running their own game a separate ESP32) see each other's characters:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg"><span class="image-caption">First player (using the Arduino Joystick)</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg"><span class="image-caption">Second player (using the Wiimote).</span></span>
+
+<p>
+They're using
+<a href="https://www.espressif.com/en/products/software/esp-now/overview">ESP-NOW</a>
+(a protocol made by Espressif, the makers of ESP32) to communicate.
+Currently code is very simple, it's really just a proof-of-concept.
+Each ESP32 keeps broadcasting messages containing its character's
+position and frame.  When it receives a message, it puts a second
+character at the received location with the received frame to
+represent the remote player.
+</p>
+
+<p>
+The network part was much easier than expected, I got it running a
+couple of hours after I was able to get WiFi running inside the game
+(I had researched how to send and receive messages using ESP-NOW prior
+to that).  The hard part was freeing enough memory to get the WiFi
+system to start in the first place.  If you look closely at the
+monitors in the photos, you can see that the image's borders are cut
+at the sides: the drawing area is only 240x240 pixels (as opposed to
+the usual 320x240).  The monitor still thinks it's using the old
+resolution, in effect what I did was increase the horizontal front-
+and back-porch of the VGA timing, which decreases the horizontal
+resolution but keeps everything else unchanged (crucially, the hsync
+timing).
+</p>
+
+<p>
+That took care of the RAM, but we also had a ROM problem: with the
+added WiFi library, the program binary itself ended up too big to fit
+the flash (at least with the default Arduino IDE settings). So I
+removed some sprites, an entire tileset (<code>castle</code>) and cut some tiles
+from another tileset (<code>castle3</code>).  To do that I made the <code>conv_spr</code>
+tool (in the <code>conv_img</code> directory in the Github repository) -- it's an
+improvement of the tool I had made before but hadn't released.
+</p>
+
+<p>
+The nice side of all that work is that now it's much easier to change
+the resolution with the new VGA code.  It can also select between
+using double framebuffers (as before) or a single framebuffer.  I made
+that when researching ways to decrease VGA memory use -- it turns out
+that the game <b>almost</b> runs well enough with a single framebuffer, but
+it's not quite fast enough to draw the whole screen during
+<a href="https://en.wikipedia.org/wiki/Vertical_blanking_interval">vblank</a>
+(the time when the monitor is not actively drawing the image), so the
+top portion of the screen gets a little messed up if we try.  That's
+why the solution I chose at the end was to decrease the resolution and
+keep using two framebuffers, but I kept the code to use a single
+framebuffer in case I need it for another project in the future.
+</p>
+
+<p>
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Homemade ESP32 VGA Boards</title>
-    <link href="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
-    <id>http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
-    <published>2021-04-02T03:33:36.000Z</published>
-    <updated>2021-04-02T03:32:28.265Z</updated>
-    
-    <content type="html"><![CDATA[<p>To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" title="ESP32 game engine">ESP32 game engine</a>, I madea new board for the ESP32 so I can have two of them running the gameand talking to each other.  The new board was supposed to be just acopy of the original one, but I discovered a silly mistake I made inthe original wiring: the red-high and red-low wires were reversed.This caused quite a mess in the colors, I’m surprised I didn’t noticeit before:</p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels"></p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the &quot;P&quot;"></p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch"></p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch"></p><p>The “new dac” label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" title="last post">last post</a>. I’mnot sure I can see any difference between the old an new DACs, to behonest (my phone camera doesn’t help – its automatic color balancemesses up the colors way more than my DACs, apparently).</p><p>In any case, it’s easy to see the difference between the old and newboards. Not only the new board’s images have a blue-greenish tintoverall (less red), we can also see that the red gradient in the “P”is clearly fixed – what should be <code>black</code>-&gt;<code>dark red</code>-&gt;<code>medium red</code>-&gt;<code>bright red</code> was wrongly shown as <code>black</code>-&gt;<code>medium red</code>-&gt;<code>dark red</code>-&gt;<code>bright red</code>, which is happens when the low and high bits of thered component are swapped:</p><table><thead><tr><th></th><th>correct gradient</th><th>swapped first and second bits</th></tr></thead><tbody><tr><td>binary</td><td>00 01 10 11</td><td>00 10 01 11</td></tr><tr><td>decimal</td><td>0  1  2  3</td><td>0  2  1  3</td></tr></tbody></table><p>Of course, since we can select the ESP32 output pins any way we want,it’s easy to fix this in software by simply changing the pinassignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That’s good news for me because Idon’t feel like making a third board right now.</p><p>And finally, just for reference, here are all of the homemade boardsI’m using in this project:</p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board"></p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don&#39;t cross, unlike the blue and green ones)"></p><p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs"></p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;To start experimenting with the networking code of the &lt;a href=&quot;/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/&quot; title=&quot;ESP32 game e</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="perfboard" scheme="http://moefh.github.io/tags/perfboard/"/>
-    
+    <link href="http://raspberrypi:8081/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
+    <id>http://raspberrypi:8081/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
+    <published>2021-04-02T00:33:36.000</published>
+    <updated>2021-04-02T00:33:36.000</updated>
+    <content type="html"><![CDATA[<p>
+To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
+a new board for the ESP32 so I can have two of them running the game
+and talking to each other.  The new board was supposed to be just a
+copy of the original one, but I discovered a silly mistake I made in
+the original wiring: the red-high and red-low wires were reversed.
+This caused quite a mess in the colors, I'm surprised I didn't notice
+it before:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg"><span class="image-caption">Comparison showing that the old board has wrong red levels</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg"><span class="image-caption">Zoom in the "P"</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg"><span class="image-caption">Bridge and torch</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg"><span class="image-caption">Zoom in the torch</span></span>
+
+<p>
+The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
+not sure I can see any difference between the old an new DACs, to be
+honest (my phone camera doesn't help -- its automatic color balance
+messes up the colors way more than my DACs, apparently).
+</p>
+
+<p>
+In any case, it's easy to see the difference between the old and new
+boards. Not only the new board's images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the "P"
+is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
+red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
+red</code>-><code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
+<tr>
+<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
+<tr>
+<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
+</table></div></div>
+
+
+<p>
+Of course, since we can select the ESP32 output pins any way we want,
+it's easy to fix this in software by simply changing the pin
+assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
+don't feel like making a third board right now.
+</p>
+
+<p>
+And finally, just for reference, here are all of the homemade boards
+I'm using in this project:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg"><span class="image-caption">New board</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg"><span class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</span></span>
+
+<p>
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg"><span class="image-caption">DACs</span></span>
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 3</title>
-    <link href="http://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
-    <id>http://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
-    <published>2021-03-27T19:11:51.000Z</published>
-    <updated>2021-04-01T23:37:30.115Z</updated>
-    
-    <content type="html"><![CDATA[<p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>Even though there’s nothing <em>really</em> exciting to report, this is avery long post because there’s a lot of small changes:</p><ul><li>Wiimote support</li><li>New VGA DACs</li><li>Rewriting the VGA output code</li><li>New font</li></ul><h2 id="Wiimote-Support"><a href="#Wiimote-Support" class="headerlink" title="Wiimote Support"></a>Wiimote Support</h2><p>The game now supports the Wiimote controller (via Bluetooth) usingtakeru’s <a href="https://github.com/takeru/Wiimote">Wiimote</a> library. I hadto make a very small change to use it: I added a <code>void *</code> parameter tothe callback function, so it can update the state of the controllerobject without forcing it to refer to the global binding.</p><p>The library works perfectly, the only slightly annoying thing is thatI haven’t figured out how to permanently pair the controller with theESP32, so every time the ESP32 restarts you have to press the Wiimotebuttons 1 and 2 at the same time to make the Bluetooth connection. Nota big deal, but it could be better.</p><h2 id="New-VGA-DACs"><a href="#New-VGA-DACs" class="headerlink" title="New VGA DACs"></a>New VGA DACs</h2><p>I made a new VGA connector with new digital-to-analog converters(DACs). The old ones are slightly wonky because I didn’t haveresistors with good values when I made it, so I finally got some newresistors and made a new one:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs"></p><p>For comparison, here’s the old one:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs"></p><p>To see why the new DACs are better than the old ones, we have to talkabout how the VGA color signal is generated.  The monitor wants toreceive each color component (Red, Green, Blue) in their own wire,with a voltage between 0V and 0.7V indicating its intensity.  Toproduce an image, the voltage has to be changed as the monitor sweepsthe screen to draw the pixels: each pixel is drawn with the RGBintensity corresponding to the voltage of the red, green and bluewires at the time it’s being drawn.</p><p>The ESP32 only has 2 internal DAC outputs, so we can’t use them tocreate the 3 voltages we need for the RGB wires (even if it had 3, itsDACs aren’t fast enough to generate the signal we need at over12MHz).  So we make the ESP32 output each color component as multipledigital pins: in our case, we use 2 pins per component. Since adigital pin has two logical values (0 and 1), each component has 4possible combinations (00, 01, 10, 11), and the DAC has to convertthese to 4 voltages between 0V and 0.7V. Ideally, we’d like to mapthem like this:</p><table><thead><tr><th>pin values (from ESP32)</th><th>intensity</th><th>output voltage (to VGA monitor)</th></tr></thead><tbody><tr><td>00</td><td>0%</td><td>0V</td></tr><tr><td>01</td><td>33%</td><td>0.23V</td></tr><tr><td>10</td><td>67%</td><td>0.47V</td></tr><tr><td>11</td><td>100%</td><td>0.7V</td></tr></tbody></table><p>The ESP32 output pins give 3.3V when high (logical 1) and 0V when low(logical 0), so we can build a small circuit connecting them toresistors to generate the desired output voltages:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)"></p><p>That’s the DAC. We just have to choose values for R1 and R2 so thatwhen Pin1 and Pin2 are high/low we have the desired voltage in outputas shown in the table above. (By the way, the 75Ω resistor is therefor impedance matching with the monitor – I don’t think it’s reallyright, but I don’t know how to match the impedance properly).</p><p>The old DAC had resistor values of 1KΩ and 560Ω, which is what I hadavailable at the time. The new DAC has 1KΩ and 470Ω, which outputsvoltages closer to what we want:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)"></p><p>The dotted lines show the theoretical best values for each pin valueexcept for <code>00</code>, which has the trivial-to-generate voltage level of0V.  The new DAC is overall closer to the theoretical best, but mostimportantly, it has more consistent spacing between the levels, whilethe old DAC has the interval between 01 and 10 smaller then the otherones.</p><p>I’m not sure the image result is that different, but for the recordhere’s a photo of the game running with the new DACs:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs"></p><h2 id="Rewriting-the-VGA-Output-Code"><a href="#Rewriting-the-VGA-Output-Code" class="headerlink" title="Rewriting the VGA Output Code"></a>Rewriting the VGA Output Code</h2><p>I ended up rewriting the VGA output code. I was using bitluni’sexcellent <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but thatlibrary does a lot of stuff we don’t need. That makes the code largerand also more complicated: when reading the code, I had troublefollowing exactly how things are done with the code written in C++with multiple inheritance.</p><p>So to make sure I understood every detail, I ended up rewriting thecode in plain C style. My code supports only double-buffered output,and changing the resolution requires altering the appropriateconstants by hand (I might make it easier to change it if I end upusing this code for something else).  It also doesn’t have any drawingAPI, all drawing must be done by writing directly to the framebuffer– which suits the game just fine, because I was already doing thatwith ESP32Lib.</p><p>My only improvement over ESP32Lib was making the I2S system trigger aninterrupt at the end of each frame (the interrupy simply increments aframe counter). With that, the main game loop can now wait for the endof the frame to swap the framebuffers and start drawing again(basically a vsync). That removes the annoying horizontal line fromthe screen which happens when the image is updated while it’s beingdrawn, and also forces a constant framerate (that’s why that photoabove shows 60fps).</p><p>It’s still possible to disable the vsync (returning to the oldvariable framerate and annoying horizontal line), which I dooccasionally to check the performance of the game.</p><h2 id="New-Font"><a href="#New-Font" class="headerlink" title="New Font"></a>New Font</h2><p>Since I’m not using ESP32Lib anymore, I had to make my own font andfont-rendering code (which is pretty unoptimized, but for now itdoesn’t matter since I’m only using text for debugging).  I used<a href="https://krita.org/en/">Krita</a> to draw the font because it’s easier todraw pixel-by-pixel with it than with Gimp.</p><p>Here’s an image of the 6x8 font:</p><p><img src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font"></p><p>(The yellow/greenish background is what I used when drawing the font.)</p><h2 id="Next-Steps"><a href="#Next-Steps" class="headerlink" title="Next Steps"></a>Next Steps</h2><p>I’m not sure what I’ll do next: probably either sound or network. Fornetwork, I haven’t even decided if I’ll use ESP32’s “ESP-NOW” protocolor normal WiFi/IP, but it will be fun to investigate the pros and consof each one.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;More progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part 1&quot;&gt;here</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
-    <category term="wiimote" scheme="http://moefh.github.io/tags/wiimote/"/>
-    
+    <link href="http://raspberrypi:8081/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
+    <id>http://raspberrypi:8081/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
+    <published>2021-03-27T16:11:51.000</published>
+    <updated>2021-03-27T16:11:51.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+Even though there's nothing <b>really</b> exciting to report, this is a
+very long post because there's a lot of small changes:
+</p>
+
+<ul>
+  <li>Wiimote support</li>
+  <li>New VGA DACs</li>
+  <li>Rewriting the VGA output code</li>
+  <li>New font</li>
+</ul>
+
+<p class="header-2">Wiimote Support</p>
+
+<p>
+The game now supports the Wiimote controller (via Bluetooth) using
+takeru's <a href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
+to make a very small change to use it: I added a <code>void *</code> parameter to
+the callback function, so it can update the state of the controller
+object without forcing it to refer to the global binding.
+</p>
+
+<p>
+The library works perfectly, the only slightly annoying thing is that
+I haven't figured out how to permanently pair the controller with the
+ESP32, so every time the ESP32 restarts you have to press the Wiimote
+buttons 1 and 2 at the same time to make the Bluetooth connection. Not
+a big deal, but it could be better.
+</p>
+
+<p class="header-2">New VGA DACs</p>
+
+<p>
+I made a new VGA connector with new digital-to-analog converters
+(DACs). The old ones are slightly wonky because I didn't have
+resistors with good values when I made it, so I finally got some new
+resistors and made a new one:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg"><span class="image-caption">New VGA connector with DACs</span></span>
+
+<p>
+For comparison, here's the old one:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg"><span class="image-caption">Old VGA connector with DACs</span></span>
+
+<p>
+To see why the new DACs are better than the old ones, we have to talk
+about how the VGA color signal is generated.  The monitor wants to
+receive each color component (Red, Green, Blue) in their own wire,
+with a voltage between 0V and 0.7V indicating its intensity.  To
+produce an image, the voltage has to be changed as the monitor sweeps
+the screen to draw the pixels: each pixel is drawn with the RGB
+intensity corresponding to the voltage of the red, green and blue
+wires at the time it's being drawn.
+</p>
+
+<p>
+The ESP32 only has 2 internal DAC outputs, so we can't use them to
+create the 3 voltages we need for the RGB wires (even if it had 3, its
+DACs aren't fast enough to generate the signal we need at over
+12MHz).  So we make the ESP32 output each color component as multiple
+digital pins: in our case, we use 2 pins per component. Since a
+digital pin has two logical values (0 and 1), each component has 4
+possible combinations (00, 01, 10, 11), and the DAC has to convert
+these to 4 voltages between 0V and 0.7V. Ideally, we'd like to map
+them like this:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left">pin values (from ESP32)</th><th align="left">intensity</th><th align="left">output voltage (to VGA monitor)</th></tr>
+<tr>
+<td align="left">00</td><td align="left">0%</td><td align="left">0V</td></tr>
+<tr>
+<td align="left">01</td><td align="left">33%</td><td align="left">0.23V</td></tr>
+<tr>
+<td align="left">10</td><td align="left">67%</td><td align="left">0.47V</td></tr>
+<tr>
+<td align="left">11</td><td align="left">100%</td><td align="left">0.7V</td></tr>
+</table></div></div>
+
+
+<p>
+The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
+(logical 0), so we can build a small circuit connecting them to
+resistors to generate the desired output voltages:
+</p>
+
+<span class="image"><img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png"><span class="image-caption">DAC schematic (for each color component)</span></span>
+
+<p>
+That's the DAC. We just have to choose values for R1 and R2 so that
+when Pin1 and Pin2 are high/low we have the desired voltage in output
+as shown in the table above. (By the way, the 75Ω resistor is there
+for impedance matching with the monitor -- I don't think it's really
+right, but I don't know how to match the impedance properly).
+</p>
+
+<p>
+The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
+available at the time. The new DAC has 1KΩ and 470Ω, which outputs
+voltages closer to what we want:
+</p>
+
+<span class="image"><img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png"><span class="image-caption">DAC output voltages (dotted lines show theoretical best)</span></span>
+
+<p>
+The dotted lines show the theoretical best values for each pin value
+except for <code>00</code>, which has the trivial-to-generate voltage level of
+0V.  The new DAC is overall closer to the theoretical best, but most
+importantly, it has more consistent spacing between the levels, while
+the old DAC has the interval between 01 and 10 smaller then the other
+ones.
+</p>
+
+<p>
+I'm not sure the image result is that different, but for the record
+here's a photo of the game running with the new DACs:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg"><span class="image-caption">Game screen with the new DACs</span></span>
+
+<p class="header-2">Rewriting the VGA Output Code</p>
+
+<p>
+I ended up rewriting the VGA output code. I was using bitluni's
+excellent <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
+library does a lot of stuff we don't need. That makes the code larger
+and also more complicated: when reading the code, I had trouble
+following exactly how things are done with the code written in C++
+with multiple inheritance.
+</p>
+
+<p>
+So to make sure I understood every detail, I ended up rewriting the
+code in plain C style. My code supports only double-buffered output,
+and changing the resolution requires altering the appropriate
+constants by hand (I might make it easier to change it if I end up
+using this code for something else).  It also doesn't have any drawing
+API, all drawing must be done by writing directly to the framebuffer
+-- which suits the game just fine, because I was already doing that
+with ESP32Lib.
+</p>
+
+<p>
+My only improvement over ESP32Lib was making the I2S system trigger an
+interrupt at the end of each frame (the interrupy simply increments a
+frame counter). With that, the main game loop can now wait for the end
+of the frame to swap the framebuffers and start drawing again
+(basically a vsync). That removes the annoying horizontal line from
+the screen which happens when the image is updated while it's being
+drawn, and also forces a constant framerate (that's why that photo
+above shows 60fps).
+</p>
+
+<p>
+It's still possible to disable the vsync (returning to the old
+variable framerate and annoying horizontal line), which I do
+occasionally to check the performance of the game.
+</p>
+
+<p class="header-2">New Font</p>
+
+<p>
+Since I'm not using ESP32Lib anymore, I had to make my own font and
+font-rendering code (which is pretty unoptimized, but for now it
+doesn't matter since I'm only using text for debugging).  I used
+<a href="https://krita.org/en/">Krita</a> to draw the font because it's easier to
+draw pixel-by-pixel with it than with Gimp.
+</p>
+
+<p>
+Here's an image of the 6x8 font:
+</p>
+
+<span class="image"><img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png"><span class="image-caption">The new font</span></span>
+
+<p>
+(The yellow/greenish background is what I used when drawing the font.)
+</p>
+
+<p class="header-2">Next Steps</p>
+
+<p>
+I'm not sure what I'll do next: probably either sound or network. For
+network, I haven't even decided if I'll use ESP32's "ESP-NOW" protocol
+or normal WiFi/IP, but it will be fun to investigate the pros and cons
+of each one.
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 2</title>
-    <link href="http://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
-    <id>http://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
-    <published>2021-03-07T20:02:26.000Z</published>
-    <updated>2021-04-04T04:12:18.998Z</updated>
-    
-    <content type="html"><![CDATA[<p>I made some progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p><p>Here’s a demo video (click to open Youtube):</p><p><a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video"></a></p><p>(This video shows a slightly older version where collision detectionwas done with the image rectangle, not the character’s clippingrectangle, which is why it looks a little wonky in a few places.)</p><p>As the video shows, you control a character in a map, walking andjumping around.  I reworked some parts of the movement code, but itfeels a lot like the original, although I think the jump is not highenough.  The collision detection is pretty much untouched, except forwhat I absolutely had to do to make it run in the ESP32, which wasn’tmuch.</p><p>The joystick I’m using is a common Arduino joystick shield.  It’spretty cheap and easy to use, but it requires one input pin of theESP32 for each button, and one analog input pin for each direction ofthe stick – it’s really just a bunch of of buttons and<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>conveniently placed on a PCB:</p><p><img src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I&#39;m using"></p><p>I’ve connected all buttons pins, but the code only uses the C buttonto jump and the X analog stick to move.</p><p>I’ve tried to use a Wiimote nunchuck and a Wiimote classic controller,but I didn’t have much success.  These controllers use an<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to theWiimote, so it seems like they should be easy to use with the ESP32 –and it actually works, but it’s very unreliable.  The controller stopsreplying for no apparent reason, a lot of times requiring anunplug/re-plug to start working again.  I’ve tried it with no pullupresistors, 4.7K pullups, 10K pullups, all for nothing.  The strangestthing is that it works perfectly with an Arduino Uno (using the sameexact test code), even with no pullup resistors.  I say people sayingthat the I2C part of the ESP32 Arduino library isn’t that great, somaybe that’s the problem?</p><p>Another nice option would be to use the Wiimote itself, which usesBluetooth.  That’s probably the next thing I’ll work on in thisproject.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;I made some progress in porting Loser Corps to the ESP32 (&lt;a href=&quot;/2021/02/28/Porting-Loser-Corps-to-the-ESP32/&quot; title=&quot;here&amp;#39;s part </summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
-    <category term="joystick" scheme="http://moefh.github.io/tags/joystick/"/>
-    
+    <link href="http://raspberrypi:8081/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
+    <id>http://raspberrypi:8081/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
+    <published>2021-03-07T17:02:26.000</published>
+    <updated>2021-03-07T17:02:26.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+Here's a demo video (click to open Youtube):
+</p>
+
+<p>
+<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
+</p>
+
+<p>
+(This video shows a slightly older version where collision detection
+was done with the image rectangle, not the character's clipping
+rectangle, which is why it looks a little wonky in a few places.)
+</p>
+
+<p>
+As the video shows, you control a character in a map, walking and
+jumping around.  I reworked some parts of the movement code, but it
+feels a lot like the original, although I think the jump is not high
+enough.  The collision detection is pretty much untouched, except for
+what I absolutely had to do to make it run in the ESP32, which wasn't
+much.
+</p>
+
+<p>
+The joystick I'm using is a common Arduino joystick shield.  It's
+pretty cheap and easy to use, but it requires one input pin of the
+ESP32 for each button, and one analog input pin for each direction of
+the stick -- it's really just a bunch of of buttons and
+<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
+conveniently placed on a PCB:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
+
+<p>
+I've connected all buttons pins, but the code only uses the C button
+to jump and the X analog stick to move.
+</p>
+
+<p>
+I've tried to use a Wiimote nunchuck and a Wiimote classic controller,
+but I didn't have much success.  These controllers use an
+<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
+Wiimote, so it seems like they should be easy to use with the ESP32 --
+and it actually works, but it's very unreliable.  The controller stops
+replying for no apparent reason, a lot of times requiring an
+unplug/re-plug to start working again.  I've tried it with no pullup
+resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
+thing is that it works perfectly with an Arduino Uno (using the same
+exact test code), even with no pullup resistors.  I say people saying
+that the I2C part of the ESP32 Arduino library isn't that great, so
+maybe that's the problem?
+</p>
+
+<p>
+Another nice option would be to use the Wiimote itself, which uses
+Bluetooth.  That's probably the next thing I'll work on in this
+project.
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>Porting Loser Corps to the ESP32</title>
-    <link href="http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/"/>
-    <id>http://moefh.github.io/2021/02/28/Porting-Loser-Corps-to-the-ESP32/</id>
-    <published>2021-02-28T18:17:35.000Z</published>
-    <updated>2021-04-04T04:09:14.130Z</updated>
-    
-    <content type="html"><![CDATA[<p>I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,a video game I and a few friends made in the old days of 1998-1999, tothe <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.</p><p>I’m using bitluni’s <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> togenerate the VGA output, and I’m still using my crappy homemade DACwith 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output/" title="last post">last post</a>.  The only new addition is a littleboard I made to connect the pins from the ESP32 devkit to the VGAbreakout board without the mess I had in the breadboard, and animprovised cardboard box to hold the VGA plug in place (it workssurprisingly well).  I’ll probably make a nicer board and box when Iadd joystick input and sound output.</p><p>The code currently renders a static screen with the background filledwith tiles, some sprites and some foreground tiles. It’s probably areasonable test of how fast things will render:</p><p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup"></p><p>The game images look a little rough when converted to 64 colors,especially since the palette is fixed by the hardware, but I think Ican get used to it:</p><p><img src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game"></p><p>I managed to get a descent render speed after I started writing to thescreen 4 pixels at a time. The annoying thing about this whole thingis that because of the way the ESP32 I2S DMA works, the data in theframebuffer has to be set in a weird order:</p><table><thead><tr><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th><th><!-- --></th></tr></thead><tbody><tr><td>pixels</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>…</td></tr><tr><td>address</td><td>[2]</td><td>[3]</td><td>[0]</td><td>[1]</td><td>[6]</td><td>[7]</td><td>[4]</td><td>[5]</td><td>…</td></tr></tbody></table><p>Another annoying thing is that the VSync and HSync bits for the VGAsignal have to go inside every pixel in the framebuffer. To makethings fast, I pre-baked these bits in the image data, which meansthat if I want to change to a VGA mode that happens to have differentVSync or HSync polarity, I’ll have to re-convert the images andrecompile everything. Not a big deal, but it’s annoying.</p><p>Currently my code only supports placing images aligned horizontally to4 pixels (i.e., the x coordinate must be a multiple of 4). With that,the trick of writing 4 pixels at a time, and <em>not</em> clearing the screenevery frame (since I’m going to overwrite everything anyway), Imanaged to get around 150 frames per second. We’ll have to see how badit gets once I remove the restriction on the horizontal alignment.</p><p>All in all, I’m very pleased with the progress.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;I started porting &lt;a href=&quot;https://github.com/moefh/loser-corps&quot;&gt;Loser Corps&lt;/a&gt;,
-a video game I and a few friends made in the old days o</summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
-    <category term="loser-corps" scheme="http://moefh.github.io/tags/loser-corps/"/>
-    
+    <link href="http://raspberrypi:8081/2021/02/28/Porting-Loser-Corps-to-the-ESP32/"/>
+    <id>http://raspberrypi:8081/2021/02/28/Porting-Loser-Corps-to-the-ESP32/</id>
+    <published>2021-02-28T15:17:35.000</published>
+    <updated>2021-02-28T15:17:35.000</updated>
+    <content type="html"><![CDATA[<p>
+<i>(See <a href="/tags/loser-corps">all posts about the port</a>)</i>
+</p>
+
+<p>
+I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
+a video game I and a few friends made in the old days of 1998-1999, to
+the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
+</p>
+
+<p>
+I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
+generate the VGA output, and I'm still using my crappy homemade DAC
+with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
+board I made to connect the pins from the ESP32 devkit to the VGA
+breakout board without the mess I had in the breadboard, and an
+improvised cardboard box to hold the VGA plug in place (it works
+surprisingly well).  I'll probably make a nicer board and box when I
+add joystick input and sound output.
+</p>
+
+<p>
+The code currently renders a static screen with the background filled
+with tiles, some sprites and some foreground tiles. It's probably a
+reasonable test of how fast things will render:
+</p>
+
+<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg"><span class="image-caption">The whole setup</span></span>
+
+<p>
+The game images look a little rough when converted to 64 colors,
+especially since the palette is fixed by the hardware, but I think I
+can get used to it:
+</p>
+
+<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg"><span class="image-caption">Screenshot of the game</span></span>
+
+<p>
+I managed to get a descent render speed after I started writing to the
+screen 4 pixels at a time. The annoying thing about this whole thing
+is that because of the way the ESP32 I2S DMA works, the data in the
+framebuffer has to be set in a weird order:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
+<tr>
+<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
+</table></div></div>
+
+
+<p>
+Another annoying thing is that the VSync and HSync bits for the VGA
+signal have to go inside every pixel in the framebuffer. To make
+things fast, I pre-baked these bits in the image data, which means
+that if I want to change to a VGA mode that happens to have different
+VSync or HSync polarity, I'll have to re-convert the images and
+recompile everything. Not a big deal, but it's annoying.
+</p>
+
+<p>
+Currently my code only supports placing images aligned horizontally to
+4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
+the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
+every frame (since I'm going to overwrite everything anyway), I
+managed to get around 150 frames per second. We'll have to see how bad
+it gets once I remove the restriction on the horizontal alignment.
+</p>
+
+<p>
+All in all, I'm very pleased with the progress.
+
+</p>]]></content>
   </entry>
-  
   <entry>
     <title>ESP32 VGA output</title>
-    <link href="http://moefh.github.io/2021/02/21/ESP32-VGA-output/"/>
-    <id>http://moefh.github.io/2021/02/21/ESP32-VGA-output/</id>
-    <published>2021-02-21T18:48:01.000Z</published>
-    <updated>2021-03-10T01:02:45.303Z</updated>
-    
-    <content type="html"><![CDATA[<p>Some time ago I made a VGA connector with a simple DAC made ofresistors to use with old FPGA board, but since the board has verylittle RAM I wasn’t able to do anything <a href="https://github.com/moefh/fpga-vga-driver">toointeresting</a> (the DAC shownthere has only 1 bit per color channel, I later made an improved onewith 2 bits per channel).  But as it turns out, some crazy people madethe ESP32 output a VGA signal using I2S – I just tested it and itseems to work perfectly!</p><p>I used <a href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio DiVittorio, but there’s also<a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I’llprobably check out later.  Here’s one of FabGL’s examples in action(pay no attention to the smudges on the monitor, it’s very old):</p><p><img src="/2021/02/21/ESP32-VGA-output/image3.jpg" alt="ESP32 outputting to an old CRT monitor"></p><p>Here’s a close-up of the ESP32 showing the connected pins.</p><p><img src="/2021/02/21/ESP32-VGA-output/image7.jpg" alt="Showing the connected pins"></p><p>I’m using the default FabGL pinout, which is:</p><table><thead><tr><th align="right">ESP32 pin</th><th>Connection</th></tr></thead><tbody><tr><td align="right">23</td><td>H Sync</td></tr><tr><td align="right">15</td><td>V Sync</td></tr><tr><td align="right">22</td><td>Red (high bit)</td></tr><tr><td align="right">21</td><td>Red (low bit)</td></tr><tr><td align="right">19</td><td>Green (high bit)</td></tr><tr><td align="right">18</td><td>Green (low bit)</td></tr><tr><td align="right">5</td><td>Blue (high bit)</td></tr><tr><td align="right">4</td><td>Blue (low bit)</td></tr></tbody></table><p>And finally, here’s my hacky VGA connector/DAC with 2 bits per colorchannel giving a total of 64 colors:</p><p><img src="/2021/02/21/ESP32-VGA-output/image6.jpg" alt="My homemade VGA connector/DAC"></p><p>The other side of the board is kind of a mess (this was one of myfirst soldering jobs), but it works well enough.  And, before you ask,all of the jumpers are inserted all the way in, but some have longerleads than others – they’re really crappy jumpers!</p><p>I might try to port <a href="https://github.com/moefh/loser-corps">LoserCorps</a> to this thing. No ideahow well it will work over Wifi, the network code is <em>very</em> simplisticand probably doesn’t work well anywhere other than Ethernet. We’llsee.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;Some time ago I made a VGA connector with a simple DAC made of
+    <link href="http://raspberrypi:8081/2021/02/21/ESP32-VGA-output/"/>
+    <id>http://raspberrypi:8081/2021/02/21/ESP32-VGA-output/</id>
+    <published>2021-02-21T15:48:01.000</published>
+    <updated>2021-02-21T15:48:01.000</updated>
+    <content type="html"><![CDATA[<p>
+Some time ago I made a VGA connector with a simple DAC made of
 resistors to use with old FPGA board, but since the board has very
-little </summary>
-      
-    
-    
-    
-    
-    <category term="esp32" scheme="http://moefh.github.io/tags/esp32/"/>
-    
-    <category term="vga" scheme="http://moefh.github.io/tags/vga/"/>
-    
+little RAM I wasn't able to do anything <a href="https://github.com/moefh/fpga-vga-driver">too
+interesting</a> (the DAC shown
+there has only 1 bit per color channel, I later made an improved one
+with 2 bits per channel).  But as it turns out, some crazy people made
+the ESP32 output a VGA signal using I2S -- I just tested it and it
+seems to work perfectly!
+</p>
+
+<p>
+I used <a href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio Di
+Vittorio, but there's also
+<a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I'll
+probably check out later.  Here's one of FabGL's examples in action
+(pay no attention to the smudges on the monitor, it's very old):
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image3.jpg"><span class="image-caption">ESP32 outputting to an old CRT monitor</span></span>
+
+<p>
+Here's a close-up of the ESP32 showing the connected pins.
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image7.jpg"><span class="image-caption">Showing the connected pins</span></span>
+
+<p>
+I'm using the default FabGL pinout, which is:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="right">ESP32 pin</th><th align="left">Connection</th></tr>
+<tr>
+<td align="right">23</td><td align="left">H Sync</td></tr>
+<tr>
+<td align="right">15</td><td align="left">V Sync</td></tr>
+<tr>
+<td align="right">22</td><td align="left">Red (high bit)</td></tr>
+<tr>
+<td align="right">21</td><td align="left">Red (low bit)</td></tr>
+<tr>
+<td align="right">19</td><td align="left">Green (high bit)</td></tr>
+<tr>
+<td align="right">18</td><td align="left">Green (low bit)</td></tr>
+<tr>
+<td align="right">5</td><td align="left">Blue (high bit)</td></tr>
+<tr>
+<td align="right">4</td><td align="left">Blue (low bit)</td></tr>
+</table></div></div>
+
+
+<p>
+And finally, here's my hacky VGA connector/DAC with 2 bits per color
+channel giving a total of 64 colors:
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image6.jpg"><span class="image-caption">My homemade VGA connector/DAC</span></span>
+
+<p>
+The other side of the board is kind of a mess (this was one of my
+first soldering jobs), but it works well enough.  And, before you ask,
+all of the jumpers are inserted all the way in, but some have longer
+leads than others -- they're really crappy jumpers!
+</p>
+
+<p>
+I might try to port <a href="https://github.com/moefh/loser-corps">Loser
+Corps</a> to this thing. No idea
+how well it will work over Wifi, the network code is <b>very</b> simplistic
+and probably doesn't work well anywhere other than Ethernet. We'll
+see.
+
+</p>]]></content>
   </entry>
-  
-  <entry>
-    <title>STM32 with pure assembly</title>
-    <link href="http://moefh.github.io/2021/02/15/STM32-with-pure-assembly/"/>
-    <id>http://moefh.github.io/2021/02/15/STM32-with-pure-assembly/</id>
-    <published>2021-02-15T22:14:52.000Z</published>
-    <updated>2021-04-02T00:02:11.902Z</updated>
-    
-    <content type="html"><![CDATA[<p>I was finally able to get my hands on an STM32!  This board (sometimescalled “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip onit:</p><p><img src="/2021/02/15/STM32-with-pure-assembly/image1.jpg" alt="ST-Link programmer connected to the Blue Pill"></p><p>The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of SRAM and64KB of flash.  I have great memories of playing with ARM processorswith the Game Boy Advance (ARM7TDMI) and Nintendo DS (ARM946E-S), so Idecided to try to write some stuff using just assembly.</p><p>The whole deal was much easier than I expected. In the Nintendo DSdays I had to compile my own gcc and binutils to be able to buildbinaries, and then use a “backup” flash cartridge to run them in thehardware. Today things are much easier: the “ST-Link” programmer isvery cheap (although what I got is probably a clone), the Arduino IDEsupports STM32 with a simple change in its configuration, and peoplemake Linux packages for the cross-compiler and other tools (there’salso the STM32CubeIDE, which is based on Eclipse and is provided byST). For my needs, I just had to install <code>binutils-arm-none-eabi</code> and<code>gcc-arm-none-eabi</code> on Ubuntu and I was well on my way to write somecode.</p><p>Now, since I wanted to write pure assembly with no help from anycompiler or library, I needed a linker script, which tells the linkerwhere each section of the program goes in memory. I searched the webbut couldn’t find anyone who had <em>exactly</em> what I needed: exampleswere either for the right chip but other toolchains (there’s anYouTube video of someone doing this with the STM32CubeMX IDE, whichdoesn’t seem to use GNU’s ld?), or they were using the GNU toolchainbut for different STM32 chips. So I ended up mixing and matching (andconfirming things in the STM32F10x user manual) and ended up withthis:</p><figure class="highlight plain"><figcaption><span>stm32f103.ld</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* linker script for stm32f103.ld *&#x2F;</span><br><span class="line"></span><br><span class="line">ENTRY(start);</span><br><span class="line"></span><br><span class="line">MEMORY &#123;</span><br><span class="line"> RAM   (rwx) : ORIGIN &#x3D; 0x20000000, LENGTH &#x3D; 20K</span><br><span class="line"> FLASH (rx)  : ORIGIN &#x3D; 0x08000000, LENGTH &#x3D; 64K</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">  .text :</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    *(.isr_vector)  &#x2F;* &lt;-- this has to be at the very start of flash *&#x2F;</span><br><span class="line">    *(.text)</span><br><span class="line">    *(.text*)</span><br><span class="line">    *(.rodata)</span><br><span class="line">    *(.rodata*)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">  &#125; &gt; FLASH</span><br><span class="line"></span><br><span class="line">  __data_flash &#x3D; .;</span><br><span class="line"></span><br><span class="line">  .data : AT ( __data_flash )</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __data_start &#x3D; .;</span><br><span class="line">    *(.data)</span><br><span class="line">    *(.data*)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __data_end &#x3D; .;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">  .bss :</span><br><span class="line">  &#123;</span><br><span class="line">    __bss_start &#x3D; .;</span><br><span class="line">    *(.bss)</span><br><span class="line">    *(.bss*)</span><br><span class="line">    *(COMMON)</span><br><span class="line">    . &#x3D; ALIGN(4);</span><br><span class="line">    __bss_end &#x3D; .;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">  __stack_size &#x3D; 1024;</span><br><span class="line">  __stack_end &#x3D; ORIGIN(RAM)+LENGTH(RAM);</span><br><span class="line">  __stack_start &#x3D; __stack_end - __stack_size;</span><br><span class="line">  . &#x3D; __stack_start;</span><br><span class="line">  .stack :</span><br><span class="line">  &#123;</span><br><span class="line">    . &#x3D; . + __stack_size;</span><br><span class="line">  &#125; &gt; RAM</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>It has a lot of stuff I don’t need (a lot of these sections are usedby gcc), but I kept them anyway since they don’t hurt and I might wantto use them in the future.</p><p>The assembly code needed to set up and control a GPIO pin is prettysimple, the only thing that stumped me for a bit was not knowing thatthe flash memory needs to have an interrupt vector at the very start.I ended up putting it in its own section, <code>.isr_vector</code>, to make easyfor the linker script to place it exactly at the flash beginning.  Thefirst entry of the vector is not an interrupt handler, but the addressof the top of the stack region (the stack grows down), and the secondone is the address of the start of the code.  Apparently it reallywants some extra entries there for other handlers; the CPU locks up ifthey’re not present (even though I made the handlers themselves intoan infinite loop). I’m not entirely sure what’s going on there, butadding 6 handlers after the start address seems to keep the CPU happy.</p><p>Anyway, here’s the assembly code. In the STM32, everything iscontrolled via registers mapped in memory. The code first enables theclock for the pins on port C (all peripheral clocks start disabled tosave power), then configures pin 13 of port C as output, then sets thepin state, and then loops forever.</p><figure class="highlight armasm"><figcaption><span>main.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">        .cpu cortex-m3</span><br><span class="line">        .syntax unified</span><br><span class="line">        <span class="meta">.thumb</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ isr_vector</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.section</span> .isr_vector</span><br><span class="line">        <span class="meta">.word</span> __stack_end</span><br><span class="line">        <span class="meta">.word</span> start</span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ NMI handler</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ hard fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ memory fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ bus fault</span></span><br><span class="line">        <span class="meta">.word</span> halt      <span class="comment">@ usage fault</span></span><br><span class="line"></span><br><span class="line">        <span class="meta">.text</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ start</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.global</span> start</span><br><span class="line">        <span class="meta">.thumb_func</span></span><br><span class="line"><span class="symbol">start:</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ enable clock for port C pins</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0x10</span>             <span class="comment">@ bit 4 = port C enable</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r1</span>, <span class="number">=0x40021000</span>       <span class="comment">@ RCC base address</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x18</span>]       <span class="comment">@ 0x18 = reg for APB2 enable (where port C lives)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ configure port C pin 13 as output</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0x44244444</span>       <span class="comment">@ set pin 13 as output, other 7 pins stay as input</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r1</span>, <span class="number">=0x40011000</span>       <span class="comment">@ port C base address</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x04</span>]       <span class="comment">@ 0x04 = reg for config of 8 higher pins of port</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">@ set port C pin 13 to high (commented) or low</span></span><br><span class="line">        <span class="comment">@ldr r0, =0x2000          @ pin 13 high (0x2000 = 1&lt;&lt;13)</span></span><br><span class="line">        <span class="keyword">ldr</span> <span class="built_in">r0</span>, <span class="number">=0</span>                <span class="comment">@ pin 13 low</span></span><br><span class="line">        <span class="keyword">str</span> <span class="built_in">r0</span>, [<span class="built_in">r1</span>, <span class="number">#0x0c</span>]       <span class="comment">@ 0x0c = reg for output data of port pins</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">start_loop:</span></span><br><span class="line">        <span class="keyword">b</span> start_loop</span><br><span class="line"></span><br><span class="line"><span class="symbol">start_end:</span></span><br><span class="line">        .pool</span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ halt</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.thumb_func</span></span><br><span class="line"><span class="symbol">halt:</span></span><br><span class="line">        <span class="keyword">b</span> halt</span><br><span class="line"></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="comment">@ DATA section</span></span><br><span class="line">        <span class="comment">@ (not used, added here just to check that</span></span><br><span class="line">        <span class="comment">@ the linker script is working)</span></span><br><span class="line">        <span class="comment">@ ======================================</span></span><br><span class="line">        <span class="meta">.section</span> <span class="meta">.data</span></span><br><span class="line">        <span class="meta">.ascii</span> <span class="string">&quot;Hello, world!\0&quot;</span></span><br><span class="line">        </span><br></pre></td></tr></table></figure><p>The board has an LED connected to pin 13 of port C; it seems that theLED’s cathode is connected to the pin (with the anode connected to+Vdd) because the LED turns on when the pin is brought low.</p><p>This code works, but if I ever want to use the stuff in the <code>.data</code>section, I’ll have to copy it from the flash memory to RAM.  Thelinker script is prepared for that: it defines the symbol<code>__data_flash</code> to the address of the very end of the <code>.text</code> section,which is the start of where the <code>.data</code> section stuff is located inthe flash memory.  So I’ll just have to make a <code>memcpy</code> function thatcopies <code>__data_end-__data_start</code> bytes from <code>__data_flash</code> to<code>__data_start</code> (which is the address of the <code>.data</code> section in RAM).</p><p>After assembling the code with <code>arm-none-eabi-as</code> and linking it with<code>arm-none-eabi-ld</code>, I used <code>arm-none-eabi-objcopy</code> to convert the ELFexecutable to a stripped out binary suitable to write to flash. Theseare the commands that <code>make</code> runs:</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">arm-none-eabi-as -o main.o main.s</span><br><span class="line">arm-none-eabi-ld -Tstm32f103.ld -o main.elf main.o</span><br><span class="line">arm-none-eabi-objcopy -O binary main.elf main.bin</span><br></pre></td></tr></table></figure><p>And, finally, to upload the final binary to the flash in the chip Iended up using the Windows STLink command line utility that theArduino IDE installs when you install the STM32 boards. I think it’sthe same tool that can be downloaded from the STM32 website (whichcomes with a GUI besides the command line tool), but I haven’tchecked.</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;I was finally able to get my hands on an STM32!  This board (sometimes
-called “Blue Pill”) is pretty cheap and has a STM32F103C8T6 chip o</summary>
-      
-    
-    
-    
-    
-    <category term="stm32" scheme="http://moefh.github.io/tags/stm32/"/>
-    
-    <category term="arm" scheme="http://moefh.github.io/tags/arm/"/>
-    
-    <category term="assembly" scheme="http://moefh.github.io/tags/assembly/"/>
-    
-  </entry>
-  
 </feed>
+

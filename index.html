@@ -2,591 +2,300 @@
 <html>
 <head>
   <meta charset="utf-8">
-  
-  
-  <title>moefh.github.io</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="moefh.github.io">
-<meta property="og:url" content="http://moefh.github.io/index.html">
-<meta property="og:site_name" content="moefh.github.io">
-<meta property="og:locale" content="en_US">
-<meta property="article:author" content="MoeFH">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
-
-  
-  
-<link rel="stylesheet" href="/css/style.css">
-
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-
-  
-<meta name="generator" content="Hexo 5.3.0"></head>
-
+  <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <title>moefh.github.io</title>
+</head>
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">moefh.github.io</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">The Magic Smoke Has Left the Building</a>
-        </h2>
-      
+  <div class="logo"></div>
+  <div class="header">
+    <div class="header-nav-left">
+      <a href="/">Home</a>
+      <a href="/archives">Archives</a>
+      <a href="/about">About</a>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-          <a class="main-nav-link" href="/about">About</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://moefh.github.io"></form>
-      </div>
+    <div class="header-nav-right">
+      <a href="/atom.xml"><img class="rss-icon" src="/css/images/rss.png"></a>
     </div>
+    <div class="header-title"><a href="/">moefh.github.io</a></div>
+    <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
   </div>
-</header>
 
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-6" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/" class="article-date">
-  <time class="dt-published" datetime="2021-05-17T02:28:12.000Z" itemprop="datePublished">2021-05-16</time>
-</a>
-    
+
+<div class="content">
+
+<div class="content-left">
+
+<div class="post">
+  <div class="post-title"><a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a></div>
+  <div class="post-date">2021-05-23</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+The game now sends shots over the network, so players can see each
+other's shots:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg"><span class="image-caption">Two players shooting</span></span>
+
+<p>
+(Please excuse me for not showing the two systems and screens
+side-by-side, it's a pain to move everything around only to take a
+quick picture.)
+</p>
+
+<p>
+Another change: the game runs at 320x240 with WiFi enabled even when
+compiled under the Arduino IDE, since I found out how to decrease the
+number of WiFi buffers without recompiling the ESP-IDF WiFi component.
+It turns out that the number of rx/tx buffers used in WiFi is set in
+the struct returned by <code>WIFI_INIT_CONFIG_DEFAULT()</code>, which initializes
+the fields to values defined in the WiFi component configuration.
+Decreasing the values before passing the struct to <code>esp_wifi_init()</code>
+does the trick.
+</p>
+
+<p>
+To make it work in the Arduino IDE, I just had to stop using the
+Arduino <code>WiFi</code> object and use the ESP-IDF API directly.  One small
+snag I ran into was that the ESP-IDF version used by the Arduino Core
+is pretty old, and to initialize the network you had to call
+<code>tcpip_adapter_init()</code> instead of the current <code>esp_netif_init()</code>.
+Once I solved that, the network code compiles and runs with no
+problems.  There's just an annoying error that pops out in the serial
+complaining that I haven't created an event loop, which I think is
+required for the Arduino Core <code>WiFi</code> object to receive WiFi events.
+The game seems to run fine without it, though.
+</p>
+
+<p>
+As usual, the source code is here:
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>
+</p>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/">Porting Loser Corps to the ESP32 - Part 6</a>
-    </h1>
-  
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/network">#network</a>
+  </div>
+</div>
+<div class="post">
+  <div class="post-title"><a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6">Porting Loser Corps to the ESP32 - Part 6</a></div>
+  <div class="post-date">2021-05-16</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
-<p>The game now runs with networking enabled while using the full 320x240
-resolution:</p>
-<p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling a
-character (note also the Wii Classic
-Controller)"></p>
-<p>To fit WiFi and the two 320x240 framebuffers in memory, I had to make
-some changes: first, don’t use Bluetooth – so the Wiimote is out.
+<p>
+The game now runs with networking enabled while using the full 320x240
+resolution:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg"><span class="image-caption">Two ESP32s talking to each other via ESP-NOW, each one controlling a
+character<br>(note also the Wii Classic
+Controller)</span></span>
+
+<p>
+To fit WiFi and the two 320x240 framebuffers in memory, I had to make
+some changes: first, don't use Bluetooth -- so the Wiimote is out.
 Luckily I now can use the Wii Classic Controller (as shown in the
-picture) or Wii Nunchuk, so that’s not a big deal.</p>
-<p>Second, I had to decrease the number of transmit and receive buffers
-used by the WiFi library.  This can’t be changed in with the Arduino
-Core for the ESP32, so I can’t use the Arduino IDE for this.  Using
+picture) or Wii Nunchuk, so that's not a big deal.
+</p>
+
+<p>
+Second, I had to decrease the number of transmit and receive buffers
+used by the WiFi library.  This can't be changed in with the Arduino
+Core for the ESP32, so I can't use the Arduino IDE for this.  Using
 the ESP-IDF framework, this (and a lot more) can be changed with
-<code>idf.py menuconfig</code>:</p>
-<p><img src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers"></p>
-<p>Thankfully it’s not too much of a hassle to use the same code with the
+<code>idf.py menuconfig</code>:
+</p>
+
+<span class="image"><img width="820" height="515" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png"><span class="image-caption">Adjusting the number of WiFi receive buffers</span></span>
+
+<p>
+Thankfully it's not too much of a hassle to use the same code with the
 two APIs (which is not that surprising, since the Arduino Core is just
 an added layer on top of the ESP-IDF).  The largest hurdle was to
-learn how to set the CPU clock using the ESP-IDF (it’s a lot more
+learn how to set the CPU clock using the ESP-IDF (it's a lot more
 involved than I thought, I ended up lifting code from the Arduino
 Core) and to support the Wiimote library, which uses the Bluetooth API
-from the Arduino Core (so once more I lifted some code from there).</p>
-<p>In the end, it was fun and I learned a little bit about FreeRTOS
+from the Arduino Core (so once more I lifted some code from there).
+</p>
+
+<p>
+In the end, it was fun and I learned a little bit about FreeRTOS
 (which the Arduino Core completely hides) in order to run my code on
 one of the CPUs of the ESP32 and let the WiFi and other stuff use the
-other one.</p>
-<p>The other change in the game since the last update post was the
+other one.
+</p>
+
+<p>
+The other change in the game since the last update post was the
 addition of Wii Nunchuk and Classic Controller support via I2C with my
-<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>
-library.</p>
-<p>After plugging the library to the game code, I noticed that sometimes
+<a href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>
+library.
+</p>
+
+<p>
+After plugging the library to the game code, I noticed that sometimes
 the I2C read from the controller gets stuck for a little bit.  Usually
-that’s not a big problem, but for this game any hiccup is really
-noticeable and annoying (the engine <em>really</em> wants to run at 60fps).
+that's not a big problem, but for this game any hiccup is really
+noticeable and annoying (the engine <b>really</b> wants to run at 60fps).
 So I had to add some functions to the library to run a loop that reads
 the controller state in a different CPU core than the game engine, and
-it ended up working really well.</p>
-<p>The source code for the version of the game that uses the Arduino API
+it ended up working really well.
+</p>
+
+<p>
+The source code for the version of the game that uses the Arduino API
 is here:
-<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. I
-haven’t published the version using the ESP-IDF yet, but it just adds
-some stuff to compile under ESP-IDF.</p>
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. I
+haven't published the version using the ESP-IDF yet, but it just adds
+some stuff to compile under ESP-IDF.
+</p>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/" data-id="ckorzqo5a00005hyqebf09bqr" data-title="Porting Loser Corps to the ESP32 - Part 6" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp-now/" rel="tag">esp-now</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+<p>
 
-    </footer>
+</p>
   </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Using-Wii-I2C-Controllers-on-the-ESP32" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/" class="article-date">
-  <time class="dt-published" datetime="2021-05-15T15:38:48.000Z" itemprop="datePublished">2021-05-15</time>
-</a>
-    
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/network">#network</a>
+    <a href="/tags/esp-now">#esp-now</a>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/">Using Wii I2C Controllers on the ESP32</a>
-    </h1>
-  
+</div>
+<div class="post">
+  <div class="post-title"><a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32">Using Wii I2C Controllers on the ESP32</a></div>
+  <div class="post-date">2021-05-15</div>
+  <div class="post-content">
+<p>
+I wrote a very simple library to make the ESP32 talk via I2C to Wii
+controllers like the Wii Nunchuk and the Wii Classic Controller.
+</p>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>I wrote a very simple library to make the ESP32 talk via I2C to Wii
-controllers like the Wii Nunchuk and the Wii Classic Controller.</p>
-<p>There are a few libraries around that do this for the Arduino using
-the <a target="_blank" rel="noopener" href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, but
-for some reason that doesn’t work consistently with the ESP32 and the
-Wii controllers.  So I wrote the I2C communication using the <a target="_blank" rel="noopener" href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDF
+<p>
+There are a few libraries around that do this for the Arduino using
+the <a href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, but
+for some reason that doesn't work consistently with the ESP32 and the
+Wii controllers.  So I wrote the I2C communication using the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDF
 API</a>,
-and it works really well, except that for some reason I wasn’t able to
+and it works really well, except that for some reason I wasn't able to
 make it work at 400KHz (which is supposedly what the Wii controllers
-accept), only at 100KHz.  That’s a little disappointing, but good
+accept), only at 100KHz.  That's a little disappointing, but good
 enough for my purposes, which is using the controllers in the ESP32
-port of Loser Corps.</p>
-<p>While playing with it, I wrote a little test program to display the
+port of Loser Corps.
+</p>
+
+<p>
+While playing with it, I wrote a little test program to display the
 state of the connected controller on a small OLED screen (SSD1306),
-which is controlled using the <a target="_blank" rel="noopener" href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306
+which is controlled using the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306
 library</a> also via I2C,
-but using the <code>Wire</code> library:</p>
-<p><img src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler"></p>
-<p>When using the Wii Classic Controller, the screen shows two triangles
+but using the <code>Wire</code> library:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg"><span class="image-caption">Testing the Wii Classic Controler</span></span>
+
+<p>
+When using the Wii Classic Controller, the screen shows two triangles
 that point on the direction where you move the sticks, growing in size
 as you move the stick farther along.  Pressing each button lights a
 corresponding character on the screen, and pulling the analog triggers
-increases the size of two bars that appear on the left side.</p>
-<p>When using the Wii Nunchuk, the screen shows a single triangle with
+increases the size of two bars that appear on the left side.
+</p>
+
+<p>
+When using the Wii Nunchuk, the screen shows a single triangle with
 the status of the nunchuk stick and three bars to the left that show
 the status of the X, Y and Z accelerometer readings.  Pressing C or Z
-displays the corresponding letter on the screen.</p>
-<p>I wrote this small test program mostly for fun, but it tests something
+displays the corresponding letter on the screen.
+</p>
+
+<p>
+I wrote this small test program mostly for fun, but it tests something
 important: that my library, which uses I2C via ESP-IDF, can coexist
 with <code>Wire</code> library.  When using them together, you just have to be
 careful not to use the same ESP32 I2C port with the two libraries at
 the same time.  In this program, my library uses I2C port 0 and the
-<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).</p>
-<p>The source code for the library is here:
-<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a></p>
+<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).
+</p>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/" data-id="ckom9hqy30001j4yqgvcd7fs7" data-title="Using Wii I2C Controllers on the ESP32" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wii/" rel="tag">wii</a></li></ul>
+<p>
+The source code for the library is here:
+<a href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a>
 
-    </footer>
+</p>
   </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-5" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/" class="article-date">
-  <time class="dt-published" datetime="2021-04-17T17:04:59.000Z" itemprop="datePublished">2021-04-17</time>
-</a>
-    
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/i2c">#i2c</a>
+    <a href="/tags/wii">#wii</a>
+    <a href="/tags/nunchuk">#nunchuk</a>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/">Porting Loser Corps to the ESP32 - Part 5</a>
-    </h1>
-  
+</div>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
-<p>This is just a quick update: I have added shooting to the game.  You
-shoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).
-There can be at most 14 shots active at once, and they do nothing but
-fly in a straight line until they hit a wall or the edge of the map.</p>
-<p><img src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn&#39;t like moving objects, in
- reality it&#39;s less blurry than shown
- here)"></p>
-<p>I also ported the game to use the ESP-IDF framework (as opposed to the
-Arduino framework, which originally used).  I’m trying to see if I can
-decrease the memory used by the WiFi system so the game can use full
-320x240 resolution while in networked mode, and the EDP-IDF framework
-has lots of configuration options.  I haven’t made much progress with
-it yet: I was just recently able to make the game run at full speed,
-after finding that I have to set not ony the processor clock to 240MHz
-but also the flash SPI clock to 80MHz (apparently the flash speed is a
-bottleneck, which is not surprising since we copy images directly from
-flash to the framebuffer).</p>
-<p>As usual, the source is on
-<a target="_blank" rel="noopener" href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven’t
-written this beforem, so from now on I’ll start adding this link to
-every post).</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/" data-id="cknm06wfg0000x7yqf4ubdkhh" data-title="Porting Loser Corps to the ESP32 - Part 5" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Porting-Loser-Corps-to-the-ESP32-Part-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/" class="article-date">
-  <time class="dt-published" datetime="2021-04-04T03:10:58.000Z" itemprop="datePublished">2021-04-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/">Porting Loser Corps to the ESP32 - Part 4</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>More progress in porting Loser Corps to the ESP32 (<a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/" title="here&#39;s part 1">here&#39;s part 1</a> of the saga).</p>
-<p>Working on the game network code, I was able to make two players (each
-running their own game a separate ESP32) see each other’s characters:</p>
-<p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg" alt="First player (using the Arduino Joystick)"></p>
-<p><img src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg" alt="Second player (using the Wiimote)."></p>
-<p>They’re using
-<a target="_blank" rel="noopener" href="https://www.espressif.com/en/products/software/esp-now/overview">ESP-NOW</a>
-(a protocol made by Espressif, the makers of ESP32) to communicate.
-Currently code is very simple, it’s really just a proof-of-concept.
-Each ESP32 keeps broadcasting messages containing its character’s
-position and frame.  When it receives a message, it puts a second
-character at the received location with the received frame to
-represent the remote player.</p>
-<p>The network part was much easier than expected, I got it running a
-couple of hours after I was able to get WiFi running inside the game
-(I had researched how to send and receive messages using ESP-NOW prior
-to that).  The hard part was freeing enough memory to get the WiFi
-system to start in the first place.  If you look closely at the
-monitors in the photos, you can see that the image’s borders are cut
-at the sides: the drawing area is only 240x240 pixels (as opposed to
-the usual 320x240).  The monitor still thinks it’s using the old
-resolution, in effect what I did was increase the horizontal front-
-and back-porch of the VGA timing, which decreases the horizontal
-resolution but keeps everything else unchanged (crucially, the hsync
-timing).</p>
-<p>That took care of the RAM, but we also had a ROM problem: with the
-added WiFi library, the program binary itself ended up too big to fit
-the flash (at least with the default Arduino IDE settings). So I
-removed some sprites, an entire tileset (<code>castle</code>) and cut some tiles
-from another tileset (<code>castle3</code>).  To do that I made the <code>conv_spr</code>
-tool (in the <code>conv_img</code> directory in the Github repository) – it’s an
-improvement of the tool I had made before but hadn’t released.</p>
-<p>The nice side of all that work is that now it’s much easier to change
-the resolution with the new VGA code.  It can also select between
-using double framebuffers (as before) or a single framebuffer.  I made
-that when researching ways to decrease VGA memory use – it turns out
-that the game <em>almost</em> runs well enough with a single framebuffer, but
-it’s not quite fast enough to draw the whole screen during
-<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vertical_blanking_interval">vblank</a>
-(the time when the monitor is not actively drawing the image), so the
-top portion of the screen gets a little messed up if we try.  That’s
-why the solution I chose at the end was to decrease the resolution and
-keep using two framebuffers, but I kept the code to use a single
-framebuffer in case I need it for another project in the future.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/" data-id="ckn2lf38h0000h0yqcm6yaauk" data-title="Porting Loser Corps to the ESP32 - Part 4" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Homemade-ESP32-VGA-Boards" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/" class="article-date">
-  <time class="dt-published" datetime="2021-04-02T03:33:36.000Z" itemprop="datePublished">2021-04-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/04/02/Homemade-ESP32-VGA-Boards/">Homemade ESP32 VGA Boards</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" title="ESP32 game engine">ESP32 game engine</a>, I made
-a new board for the ESP32 so I can have two of them running the game
-and talking to each other.  The new board was supposed to be just a
-copy of the original one, but I discovered a silly mistake I made in
-the original wiring: the red-high and red-low wires were reversed.
-This caused quite a mess in the colors, I’m surprised I didn’t notice
-it before:</p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the &quot;P&quot;"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch"></p>
-<p>The “new dac” label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" title="last post">last post</a>. I’m
-not sure I can see any difference between the old an new DACs, to be
-honest (my phone camera doesn’t help – its automatic color balance
-messes up the colors way more than my DACs, apparently).</p>
-<p>In any case, it’s easy to see the difference between the old and new
-boards. Not only the new board’s images have a blue-greenish tint
-overall (less red), we can also see that the red gradient in the “P”
-is clearly fixed – what should be <code>black</code>-&gt;<code>dark red</code>-&gt;<code>medium red</code>-&gt;<code>bright red</code> was wrongly shown as <code>black</code>-&gt;<code>medium red</code>-&gt;<code>dark red</code>-&gt;<code>bright red</code>, which is happens when the low and high bits of the
-red component are swapped:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>correct gradient</th>
-<th>swapped first and second bits</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>binary</td>
-<td>00 01 10 11</td>
-<td>00 10 01 11</td>
-</tr>
-<tr>
-<td>decimal</td>
-<td>0  1  2  3</td>
-<td>0  2  1  3</td>
-</tr>
-</tbody></table>
-<p>Of course, since we can select the ESP32 output pins any way we want,
-it’s easy to fix this in software by simply changing the pin
-assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
-<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That’s good news for me because I
-don’t feel like making a third board right now.</p>
-<p>And finally, just for reference, here are all of the homemade boards
-I’m using in this project:</p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don&#39;t cross, unlike the blue and green ones)"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/" data-id="ckmzi1kdw0002m1yqbiib0mgb" data-title="Homemade ESP32 VGA Boards" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-
-
-  <nav id="page-nav">
-    
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
-  </nav>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp-now/" rel="tag">esp-now</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wii/" rel="tag">wii</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp-now/" style="font-size: 10px;">esp-now</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/i2c/" style="font-size: 10px;">i2c</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/network/" style="font-size: 12.5px;">network</a> <a href="/tags/nunchuk/" style="font-size: 10px;">nunchuk</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 17.5px;">vga</a> <a href="/tags/wii/" style="font-size: 10px;">wii</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/">Porting Loser Corps to the ESP32 - Part 6</a>
-          </li>
-        
-          <li>
-            <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/">Using Wii I2C Controllers on the ESP32</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/">Porting Loser Corps to the ESP32 - Part 5</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/">Porting Loser Corps to the ESP32 - Part 4</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/">Homemade ESP32 VGA Boards</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+<div class="footer">
+    <div class="page-links">
+      <div class="nav-link nav-link-prev">
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
+
+      <div class="nav-link nav-link-page-num">Page 1/4</div>
       
-      &copy; 2021 MoeFH<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
+      <div class="nav-link nav-link-next">
+        <a href="/page2.html">Next &#x2192;</a>
+      </div>
 
     </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-    <a href="/about" class="mobile-nav-link">About</a>
-  
-</nav>
-    
 
+  <div class="copyright">Copyright (C) 2021 MoeFH</div>
 
-<script src="/js/jquery-3.4.1.min.js"></script>
+</div>
 
+</div>
 
-
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
+<div class="content-right">
+  <div class="tag-list">
+    <div class="title">TAGS</div>
+    <div class="tags">
+      <div class="tag"><a href="/tags/arm">arm</a></div>
+      <div class="tag"><a href="/tags/assembly">assembly</a></div>
+      <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
+      <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/i2c">i2c</a></div>
+      <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/network">network</a></div>
+      <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
+      <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/vga">vga</a></div>
+      <div class="tag"><a href="/tags/wii">wii</a></div>
+      <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
+    </div>
   </div>
+
+  <div class="month-list">
+    <div class="title">ARCHIVES</div>
+    <div class="months">
+      <div class="month"><a href="/archives/2021/05">May 2021</a></div>
+      <div class="month"><a href="/archives/2021/04">April 2021</a></div>
+      <div class="month"><a href="/archives/2021/03">March 2021</a></div>
+      <div class="month"><a href="/archives/2021/02">Ferbuary 2021</a></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
 </body>
 </html>
+

@@ -29,94 +29,72 @@
 <div class="content-left">
 
 <div class="post">
-  <div class="post-title"><a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">Porting Loser Corps to the ESP32 - Part 2</a></div>
-  <div class="post-date">2021-03-07</div>
+  <div class="post-title"><a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a></div>
+  <div class="post-date">2021-05-23</div>
   <div class="post-content">
 <p>
 <i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
 </p>
 
 <p>
-Here's a demo video (click to open Youtube):
+The game now sends shots over the network, so players can see each
+other's shots:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg"><span class="image-caption">Two players shooting</span></span>
+
+<p>
+(Please excuse me for not showing the two systems and screens
+side-by-side, it's a pain to move everything around only to take a
+quick picture.)
 </p>
 
 <p>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
+Another change: the game runs at 320x240 with WiFi enabled even when
+compiled under the Arduino IDE, since I found out how to decrease the
+number of WiFi buffers without recompiling the ESP-IDF WiFi component.
+It turns out that the number of rx/tx buffers used in WiFi is set in
+the struct returned by <code>WIFI_INIT_CONFIG_DEFAULT()</code>, which initializes
+the fields to values defined in the WiFi component configuration.
+Decreasing the values before passing the struct to <code>esp_wifi_init()</code>
+does the trick.
 </p>
 
 <p>
-(This video shows a slightly older version where collision detection
-was done with the image rectangle, not the character's clipping
-rectangle, which is why it looks a little wonky in a few places.)
+To make it work in the Arduino IDE, I just had to stop using the
+Arduino <code>WiFi</code> object and use the ESP-IDF API directly.  One small
+snag I ran into was that the ESP-IDF version used by the Arduino Core
+is pretty old, and to initialize the network you had to call
+<code>tcpip_adapter_init()</code> instead of the current <code>esp_netif_init()</code>.
+Once I solved that, the network code compiles and runs with no
+problems.  There's just an annoying error that pops out in the serial
+complaining that I haven't created an event loop, which I think is
+required for the Arduino Core <code>WiFi</code> object to receive WiFi events.
+The game seems to run fine without it, though.
 </p>
 
 <p>
-As the video shows, you control a character in a map, walking and
-jumping around.  I reworked some parts of the movement code, but it
-feels a lot like the original, although I think the jump is not high
-enough.  The collision detection is pretty much untouched, except for
-what I absolutely had to do to make it run in the ESP32, which wasn't
-much.
-</p>
-
-<p>
-The joystick I'm using is a common Arduino joystick shield.  It's
-pretty cheap and easy to use, but it requires one input pin of the
-ESP32 for each button, and one analog input pin for each direction of
-the stick -- it's really just a bunch of of buttons and
-<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
-conveniently placed on a PCB:
-</p>
-
-<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
-
-<p>
-I've connected all buttons pins, but the code only uses the C button
-to jump and the X analog stick to move.
-</p>
-
-<p>
-I've tried to use a Wiimote nunchuck and a Wiimote classic controller,
-but I didn't have much success.  These controllers use an
-<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
-Wiimote, so it seems like they should be easy to use with the ESP32 --
-and it actually works, but it's very unreliable.  The controller stops
-replying for no apparent reason, a lot of times requiring an
-unplug/re-plug to start working again.  I've tried it with no pullup
-resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
-thing is that it works perfectly with an Arduino Uno (using the same
-exact test code), even with no pullup resistors.  I say people saying
-that the I2C part of the ESP32 Arduino library isn't that great, so
-maybe that's the problem?
-</p>
-
-<p>
-Another nice option would be to use the Wiimote itself, which uses
-Bluetooth.  That's probably the next thing I'll work on in this
-project.
-
+As usual, the source code is here:
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>
 </p>
   </div>
   <div class="post-tags">
     <a href="/tags/esp32">#esp32</a>
     <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
-    <a href="/tags/joystick">#joystick</a>
+    <a href="/tags/network">#network</a>
   </div>
 </div>
 
 <div class="footer">
     <div class="post-links">
       <div class="nav-link nav-link-left">
-        &#x2190; newer<br>
-        <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">Porting Loser Corps to the ESP32 - Part 3</a>
       </div>
 
       <div class="nav-link nav-link-separator"></div>
       
       <div class="nav-link nav-link-right">
         older &#x2192;<br>
-        <a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32">Porting Loser Corps to the ESP32</a>
+        <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6">Porting Loser Corps to the ESP32 - Part 6</a>
       </div>
 
     </div>

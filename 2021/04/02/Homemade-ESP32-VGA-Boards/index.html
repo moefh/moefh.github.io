@@ -2,312 +2,168 @@
 <html>
 <head>
   <meta charset="utf-8">
-  
-  
-  <title>Homemade ESP32 VGA Boards | moefh.github.io</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="To start experimenting with the networking code of the ESP32 game engine, I made a new board for the ESP32 so I can have two of them running the game and talking to each other.  The new board was supp">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Homemade ESP32 VGA Boards">
-<meta property="og:url" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/index.html">
-<meta property="og:site_name" content="moefh.github.io">
-<meta property="og:description" content="To start experimenting with the networking code of the ESP32 game engine, I made a new board for the ESP32 so I can have two of them running the game and talking to each other.  The new board was supp">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg">
-<meta property="og:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg">
-<meta property="article:published_time" content="2021-04-02T03:33:36.000Z">
-<meta property="article:modified_time" content="2021-04-02T03:32:28.265Z">
-<meta property="article:author" content="MoeFH">
-<meta property="article:tag" content="esp32">
-<meta property="article:tag" content="vga">
-<meta property="article:tag" content="perfboard">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg">
-  
-    <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
-
-  
-  
-<link rel="stylesheet" href="/css/style.css">
-
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-
-  
-<meta name="generator" content="Hexo 5.3.0"></head>
-
+  <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <title>moefh.github.io</title>
+</head>
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">moefh.github.io</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">The Magic Smoke Has Left the Building</a>
-        </h2>
-      
+  <div class="logo"></div>
+  <div class="header">
+    <div class="header-nav-left">
+      <a href="/">Home</a>
+      <a href="/archives">Archives</a>
+      <a href="/about">About</a>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-          <a class="main-nav-link" href="/about">About</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://moefh.github.io"></form>
-      </div>
+    <div class="header-nav-right">
+      <a href="/atom.xml"><img class="rss-icon" src="/css/images/rss.png"></a>
     </div>
+    <div class="header-title"><a href="/">moefh.github.io</a></div>
+    <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
   </div>
-</header>
 
-      <div class="outer">
-        <section id="main"><article id="post-Homemade-ESP32-VGA-Boards" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/" class="article-date">
-  <time class="dt-published" datetime="2021-04-02T03:33:36.000Z" itemprop="datePublished">2021-04-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="p-name article-title" itemprop="headline name">
-      Homemade ESP32 VGA Boards
-    </h1>
-  
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/" title="ESP32 game engine">ESP32 game engine</a>, I made
+<div class="content">
+
+<div class="content-left">
+
+<div class="post">
+  <div class="post-title"><a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a></div>
+  <div class="post-date">2021-04-02</div>
+  <div class="post-content">
+<p>
+To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
 a new board for the ESP32 so I can have two of them running the game
 and talking to each other.  The new board was supposed to be just a
 copy of the original one, but I discovered a silly mistake I made in
 the original wiring: the red-high and red-low wires were reversed.
-This caused quite a mess in the colors, I’m surprised I didn’t notice
-it before:</p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the &quot;P&quot;"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch"></p>
-<p>The “new dac” label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" title="last post">last post</a>. I’m
+This caused quite a mess in the colors, I'm surprised I didn't notice
+it before:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg"><span class="image-caption">Comparison showing that the old board has wrong red levels</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg"><span class="image-caption">Zoom in the "P"</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg"><span class="image-caption">Bridge and torch</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg"><span class="image-caption">Zoom in the torch</span></span>
+
+<p>
+The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
 not sure I can see any difference between the old an new DACs, to be
-honest (my phone camera doesn’t help – its automatic color balance
-messes up the colors way more than my DACs, apparently).</p>
-<p>In any case, it’s easy to see the difference between the old and new
-boards. Not only the new board’s images have a blue-greenish tint
-overall (less red), we can also see that the red gradient in the “P”
-is clearly fixed – what should be <code>black</code>-&gt;<code>dark red</code>-&gt;<code>medium red</code>-&gt;<code>bright red</code> was wrongly shown as <code>black</code>-&gt;<code>medium red</code>-&gt;<code>dark red</code>-&gt;<code>bright red</code>, which is happens when the low and high bits of the
-red component are swapped:</p>
+honest (my phone camera doesn't help -- its automatic color balance
+messes up the colors way more than my DACs, apparently).
+</p>
+
+<p>
+In any case, it's easy to see the difference between the old and new
+boards. Not only the new board's images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the "P"
+is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
+red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
+red</code>-><code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
 <table>
-<thead>
 <tr>
-<th></th>
-<th>correct gradient</th>
-<th>swapped first and second bits</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>binary</td>
-<td>00 01 10 11</td>
-<td>00 10 01 11</td>
-</tr>
+<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
 <tr>
-<td>decimal</td>
-<td>0  1  2  3</td>
-<td>0  2  1  3</td>
-</tr>
-</tbody></table>
-<p>Of course, since we can select the ESP32 output pins any way we want,
-it’s easy to fix this in software by simply changing the pin
+<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
+<tr>
+<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
+</table></div></div>
+
+
+<p>
+Of course, since we can select the ESP32 output pins any way we want,
+it's easy to fix this in software by simply changing the pin
 assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
-<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That’s good news for me because I
-don’t feel like making a third board right now.</p>
-<p>And finally, just for reference, here are all of the homemade boards
-I’m using in this project:</p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don&#39;t cross, unlike the blue and green ones)"></p>
-<p><img src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs"></p>
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
+don't feel like making a third board right now.
+</p>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/" data-id="ckmzi1kdw0002m1yqbiib0mgb" data-title="Homemade ESP32 VGA Boards" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vga/" rel="tag">vga</a></li></ul>
+<p>
+And finally, just for reference, here are all of the homemade boards
+I'm using in this project:
+</p>
 
-    </footer>
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg"><span class="image-caption">New board</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg"><span class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</span></span>
+
+<p>
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg"><span class="image-caption">DACs</span></span>
+
+</p>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Porting Loser Corps to the ESP32 - Part 4
-        
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/perfboard">#perfboard</a>
+  </div>
+</div>
+
+<div class="footer">
+    <div class="post-links">
+      <div class="nav-link nav-link-left">
+        &#x2190; newer<br>
+        <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4">Porting Loser Corps to the ESP32 - Part 4</a>
       </div>
-    </a>
-  
-  
-    <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Porting Loser Corps to the ESP32 - Part 3</div>
-    </a>
-  
-</nav>
 
-  
-</article>
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm/" rel="tag">arm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/assembly/" rel="tag">assembly</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp-now/" rel="tag">esp-now</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/esp32/" rel="tag">esp32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/i2c/" rel="tag">i2c</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/joystick/" rel="tag">joystick</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/loser-corps/" rel="tag">loser-corps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nunchuk/" rel="tag">nunchuk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/perfboard/" rel="tag">perfboard</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stm32/" rel="tag">stm32</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vga/" rel="tag">vga</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wii/" rel="tag">wii</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wiimote/" rel="tag">wiimote</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/arm/" style="font-size: 10px;">arm</a> <a href="/tags/assembly/" style="font-size: 10px;">assembly</a> <a href="/tags/esp-now/" style="font-size: 10px;">esp-now</a> <a href="/tags/esp32/" style="font-size: 20px;">esp32</a> <a href="/tags/i2c/" style="font-size: 10px;">i2c</a> <a href="/tags/joystick/" style="font-size: 10px;">joystick</a> <a href="/tags/loser-corps/" style="font-size: 15px;">loser-corps</a> <a href="/tags/network/" style="font-size: 12.5px;">network</a> <a href="/tags/nunchuk/" style="font-size: 10px;">nunchuk</a> <a href="/tags/perfboard/" style="font-size: 10px;">perfboard</a> <a href="/tags/stm32/" style="font-size: 10px;">stm32</a> <a href="/tags/vga/" style="font-size: 17.5px;">vga</a> <a href="/tags/wii/" style="font-size: 10px;">wii</a> <a href="/tags/wiimote/" style="font-size: 10px;">wiimote</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">May 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">April 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">February 2021</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/">Porting Loser Corps to the ESP32 - Part 6</a>
-          </li>
-        
-          <li>
-            <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/">Using Wii I2C Controllers on the ESP32</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/">Porting Loser Corps to the ESP32 - Part 5</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/">Porting Loser Corps to the ESP32 - Part 4</a>
-          </li>
-        
-          <li>
-            <a href="/2021/04/02/Homemade-ESP32-VGA-Boards/">Homemade ESP32 VGA Boards</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
+      <div class="nav-link nav-link-separator"></div>
       
-      &copy; 2021 MoeFH<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
+      <div class="nav-link nav-link-right">
+        older &#x2192;<br>
+        <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">Porting Loser Corps to the ESP32 - Part 3</a>
+      </div>
 
     </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-    <a href="/about" class="mobile-nav-link">About</a>
-  
-</nav>
-    
 
+  <div class="copyright">Copyright (C) 2021 MoeFH</div>
 
-<script src="/js/jquery-3.4.1.min.js"></script>
+</div>
 
+</div>
 
-
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
+<div class="content-right">
+  <div class="tag-list">
+    <div class="title">TAGS</div>
+    <div class="tags">
+      <div class="tag"><a href="/tags/arm">arm</a></div>
+      <div class="tag"><a href="/tags/assembly">assembly</a></div>
+      <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
+      <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/i2c">i2c</a></div>
+      <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/network">network</a></div>
+      <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
+      <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/vga">vga</a></div>
+      <div class="tag"><a href="/tags/wii">wii</a></div>
+      <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
+    </div>
   </div>
+
+  <div class="month-list">
+    <div class="title">ARCHIVES</div>
+    <div class="months">
+      <div class="month"><a href="/archives/2021/05">May 2021</a></div>
+      <div class="month"><a href="/archives/2021/04">April 2021</a></div>
+      <div class="month"><a href="/archives/2021/03">March 2021</a></div>
+      <div class="month"><a href="/archives/2021/02">Ferbuary 2021</a></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
 </body>
 </html>
+

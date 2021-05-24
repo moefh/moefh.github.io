@@ -29,6 +29,92 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/02/21/ESP32-VGA-output">ESP32 VGA output</a></div>
+  <div class="post-date">2021-02-21</div>
+  <div class="post-content">
+<p>
+Some time ago I made a VGA connector with a simple DAC made of
+resistors to use with old FPGA board, but since the board has very
+little RAM I wasn't able to do anything <a href="https://github.com/moefh/fpga-vga-driver">too
+interesting</a> (the DAC shown
+there has only 1 bit per color channel, I later made an improved one
+with 2 bits per channel).  But as it turns out, some crazy people made
+the ESP32 output a VGA signal using I2S -- I just tested it and it
+seems to work perfectly!
+</p>
+
+<p>
+I used <a href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio Di
+Vittorio, but there's also
+<a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I'll
+probably check out later.  Here's one of FabGL's examples in action
+(pay no attention to the smudges on the monitor, it's very old):
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image3.jpg"><span class="image-caption">ESP32 outputting to an old CRT monitor</span></span>
+
+<p>
+Here's a close-up of the ESP32 showing the connected pins.
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image7.jpg"><span class="image-caption">Showing the connected pins</span></span>
+
+<p>
+I'm using the default FabGL pinout, which is:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="right">ESP32 pin</th><th align="left">Connection</th></tr>
+<tr>
+<td align="right">23</td><td align="left">H Sync</td></tr>
+<tr>
+<td align="right">15</td><td align="left">V Sync</td></tr>
+<tr>
+<td align="right">22</td><td align="left">Red (high bit)</td></tr>
+<tr>
+<td align="right">21</td><td align="left">Red (low bit)</td></tr>
+<tr>
+<td align="right">19</td><td align="left">Green (high bit)</td></tr>
+<tr>
+<td align="right">18</td><td align="left">Green (low bit)</td></tr>
+<tr>
+<td align="right">5</td><td align="left">Blue (high bit)</td></tr>
+<tr>
+<td align="right">4</td><td align="left">Blue (low bit)</td></tr>
+</table></div></div>
+
+
+<p>
+And finally, here's my hacky VGA connector/DAC with 2 bits per color
+channel giving a total of 64 colors:
+</p>
+
+<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image6.jpg"><span class="image-caption">My homemade VGA connector/DAC</span></span>
+
+<p>
+The other side of the board is kind of a mess (this was one of my
+first soldering jobs), but it works well enough.  And, before you ask,
+all of the jumpers are inserted all the way in, but some have longer
+leads than others -- they're really crappy jumpers!
+</p>
+
+<p>
+I might try to port <a href="https://github.com/moefh/loser-corps">Loser
+Corps</a> to this thing. No idea
+how well it will work over Wifi, the network code is <b>very</b> simplistic
+and probably doesn't work well anywhere other than Ethernet. We'll
+see.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/vga">#vga</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/02/15/STM32-with-pure-assembly">STM32 with pure assembly</a></div>
   <div class="post-date">2021-02-15</div>
   <div class="post-content">
@@ -283,15 +369,14 @@ checked.
 </div>
 
 <div class="footer">
-    <div class="post-links">
-      <div class="nav-link nav-link-left">
-        &#x2190; newer<br>
-        <a href="/2021/02/21/ESP32-VGA-output">ESP32 VGA output</a>
+    <div class="page-links">
+      <div class="nav-link nav-link-prev">
+        <a href="/page3.html">&#x2190; Previous</a>
       </div>
 
-      <div class="nav-link nav-link-separator"></div>
+      <div class="nav-link nav-link-page-num">Page 4/4</div>
       
-      <div class="nav-link nav-link-right">
+      <div class="nav-link nav-link-next">
       </div>
 
     </div>

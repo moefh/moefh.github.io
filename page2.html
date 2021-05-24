@@ -29,6 +29,51 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5">Porting Loser Corps to the ESP32 - Part 5</a></div>
+  <div class="post-date">2021-04-17</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+This is just a quick update: I have added shooting to the game.  You
+shoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).
+There can be at most 14 shots active at once, and they do nothing but
+fly in a straight line until they hit a wall or the edge of the map.
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg"><span class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects,<br>in
+ reality it's less blurry than shown
+ here)</span></span>
+
+<p>
+I also ported the game to use the ESP-IDF framework (as opposed to the
+Arduino framework, which originally used).  I'm trying to see if I can
+decrease the memory used by the WiFi system so the game can use full
+320x240 resolution while in networked mode, and the EDP-IDF framework
+has lots of configuration options.  I haven't made much progress with
+it yet: I was just recently able to make the game run at full speed,
+after finding that I have to set not ony the processor clock to 240MHz
+but also the flash SPI clock to 80MHz (apparently the flash speed is a
+bottleneck, which is not surprising since we copy images directly from
+flash to the framebuffer).
+</p>
+
+<p>
+As usual, the source is on
+<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven't
+written this before, so from now on I'll start adding this link to
+every post).
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4">Porting Loser Corps to the ESP32 - Part 4</a></div>
   <div class="post-date">2021-04-04</div>
   <div class="post-content">
@@ -107,19 +152,95 @@ framebuffer in case I need it for another project in the future.
     <a href="/tags/network">#network</a>
   </div>
 </div>
+<div class="post">
+  <div class="post-title"><a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a></div>
+  <div class="post-date">2021-04-02</div>
+  <div class="post-content">
+<p>
+To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
+a new board for the ESP32 so I can have two of them running the game
+and talking to each other.  The new board was supposed to be just a
+copy of the original one, but I discovered a silly mistake I made in
+the original wiring: the red-high and red-low wires were reversed.
+This caused quite a mess in the colors, I'm surprised I didn't notice
+it before:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg"><span class="image-caption">Comparison showing that the old board has wrong red levels</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg"><span class="image-caption">Zoom in the "P"</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg"><span class="image-caption">Bridge and torch</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg"><span class="image-caption">Zoom in the torch</span></span>
+
+<p>
+The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
+not sure I can see any difference between the old an new DACs, to be
+honest (my phone camera doesn't help -- its automatic color balance
+messes up the colors way more than my DACs, apparently).
+</p>
+
+<p>
+In any case, it's easy to see the difference between the old and new
+boards. Not only the new board's images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the "P"
+is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
+red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
+red</code>-><code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
+<tr>
+<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
+<tr>
+<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
+</table></div></div>
+
+
+<p>
+Of course, since we can select the ESP32 output pins any way we want,
+it's easy to fix this in software by simply changing the pin
+assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
+don't feel like making a third board right now.
+</p>
+
+<p>
+And finally, just for reference, here are all of the homemade boards
+I'm using in this project:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg"><span class="image-caption">New board</span></span>
+
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg"><span class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</span></span>
+
+<p>
+<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg"><span class="image-caption">DACs</span></span>
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/perfboard">#perfboard</a>
+  </div>
+</div>
 
 <div class="footer">
-    <div class="post-links">
-      <div class="nav-link nav-link-left">
-        &#x2190; newer<br>
-        <a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5">Porting Loser Corps to the ESP32 - Part 5</a>
+    <div class="page-links">
+      <div class="nav-link nav-link-prev">
+        <a href="/index.html">&#x2190; Previous</a>
       </div>
 
-      <div class="nav-link nav-link-separator"></div>
+      <div class="nav-link nav-link-page-num">Page 2/4</div>
       
-      <div class="nav-link nav-link-right">
-        older &#x2192;<br>
-        <a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a>
+      <div class="nav-link nav-link-next">
+        <a href="/page3.html">Next &#x2192;</a>
       </div>
 
     </div>

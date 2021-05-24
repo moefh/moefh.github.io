@@ -237,19 +237,179 @@ of each one.
     <a href="/tags/wiimote">#wiimote</a>
   </div>
 </div>
+<div class="post">
+  <div class="post-title"><a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">Porting Loser Corps to the ESP32 - Part 2</a></div>
+  <div class="post-date">2021-03-07</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+</p>
+
+<p>
+Here's a demo video (click to open Youtube):
+</p>
+
+<p>
+<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
+</p>
+
+<p>
+(This video shows a slightly older version where collision detection
+was done with the image rectangle, not the character's clipping
+rectangle, which is why it looks a little wonky in a few places.)
+</p>
+
+<p>
+As the video shows, you control a character in a map, walking and
+jumping around.  I reworked some parts of the movement code, but it
+feels a lot like the original, although I think the jump is not high
+enough.  The collision detection is pretty much untouched, except for
+what I absolutely had to do to make it run in the ESP32, which wasn't
+much.
+</p>
+
+<p>
+The joystick I'm using is a common Arduino joystick shield.  It's
+pretty cheap and easy to use, but it requires one input pin of the
+ESP32 for each button, and one analog input pin for each direction of
+the stick -- it's really just a bunch of of buttons and
+<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
+conveniently placed on a PCB:
+</p>
+
+<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
+
+<p>
+I've connected all buttons pins, but the code only uses the C button
+to jump and the X analog stick to move.
+</p>
+
+<p>
+I've tried to use a Wiimote nunchuck and a Wiimote classic controller,
+but I didn't have much success.  These controllers use an
+<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
+Wiimote, so it seems like they should be easy to use with the ESP32 --
+and it actually works, but it's very unreliable.  The controller stops
+replying for no apparent reason, a lot of times requiring an
+unplug/re-plug to start working again.  I've tried it with no pullup
+resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
+thing is that it works perfectly with an Arduino Uno (using the same
+exact test code), even with no pullup resistors.  I say people saying
+that the I2C part of the ESP32 Arduino library isn't that great, so
+maybe that's the problem?
+</p>
+
+<p>
+Another nice option would be to use the Wiimote itself, which uses
+Bluetooth.  That's probably the next thing I'll work on in this
+project.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/joystick">#joystick</a>
+  </div>
+</div>
+<div class="post">
+  <div class="post-title"><a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32">Porting Loser Corps to the ESP32</a></div>
+  <div class="post-date">2021-02-28</div>
+  <div class="post-content">
+<p>
+<i>(See <a href="/tags/loser-corps">all posts about the port</a>)</i>
+</p>
+
+<p>
+I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
+a video game I and a few friends made in the old days of 1998-1999, to
+the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
+</p>
+
+<p>
+I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
+generate the VGA output, and I'm still using my crappy homemade DAC
+with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
+board I made to connect the pins from the ESP32 devkit to the VGA
+breakout board without the mess I had in the breadboard, and an
+improvised cardboard box to hold the VGA plug in place (it works
+surprisingly well).  I'll probably make a nicer board and box when I
+add joystick input and sound output.
+</p>
+
+<p>
+The code currently renders a static screen with the background filled
+with tiles, some sprites and some foreground tiles. It's probably a
+reasonable test of how fast things will render:
+</p>
+
+<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg"><span class="image-caption">The whole setup</span></span>
+
+<p>
+The game images look a little rough when converted to 64 colors,
+especially since the palette is fixed by the hardware, but I think I
+can get used to it:
+</p>
+
+<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg"><span class="image-caption">Screenshot of the game</span></span>
+
+<p>
+I managed to get a descent render speed after I started writing to the
+screen 4 pixels at a time. The annoying thing about this whole thing
+is that because of the way the ESP32 I2S DMA works, the data in the
+framebuffer has to be set in a weird order:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
+<tr>
+<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
+</table></div></div>
+
+
+<p>
+Another annoying thing is that the VSync and HSync bits for the VGA
+signal have to go inside every pixel in the framebuffer. To make
+things fast, I pre-baked these bits in the image data, which means
+that if I want to change to a VGA mode that happens to have different
+VSync or HSync polarity, I'll have to re-convert the images and
+recompile everything. Not a big deal, but it's annoying.
+</p>
+
+<p>
+Currently my code only supports placing images aligned horizontally to
+4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
+the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
+every frame (since I'm going to overwrite everything anyway), I
+managed to get around 150 frames per second. We'll have to see how bad
+it gets once I remove the restriction on the horizontal alignment.
+</p>
+
+<p>
+All in all, I'm very pleased with the progress.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+  </div>
+</div>
 
 <div class="footer">
-    <div class="post-links">
-      <div class="nav-link nav-link-left">
-        &#x2190; newer<br>
-        <a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a>
+    <div class="page-links">
+      <div class="nav-link nav-link-prev">
+        <a href="/page2.html">&#x2190; Previous</a>
       </div>
 
-      <div class="nav-link nav-link-separator"></div>
+      <div class="nav-link nav-link-page-num">Page 3/4</div>
       
-      <div class="nav-link nav-link-right">
-        older &#x2192;<br>
-        <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">Porting Loser Corps to the ESP32 - Part 2</a>
+      <div class="nav-link nav-link-next">
+        <a href="/page4.html">Next &#x2192;</a>
       </div>
 
     </div>
