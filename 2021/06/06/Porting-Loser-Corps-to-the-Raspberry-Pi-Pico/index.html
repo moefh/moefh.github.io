@@ -152,169 +152,17 @@ and collision detection will be done soon.
     <a href="/tags/vga">#vga</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a></div>
-  <div class="post-date">2021-05-23</div>
-  <div class="post-content">
-<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-The game now sends shots over the network, so players can see each
-other's shots:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg" alt="Two players shooting" title="Two players shooting">
-  <div class="image-caption">Two players shooting</div>
-</div>
-
-<p>
-(Please excuse me for not showing the two systems and screens
-side-by-side, it's a pain to move everything around only to take a
-quick picture.)
-</p>
-
-<p>
-Another change: the game runs at 320x240 with WiFi enabled even when
-compiled under the Arduino IDE, since I found out how to decrease the
-number of WiFi buffers without recompiling the ESP-IDF WiFi component.
-It turns out that the number of rx/tx buffers used in WiFi is set in
-the struct returned by <code>WIFI_INIT_CONFIG_DEFAULT()</code>, which initializes
-the fields to values defined in the WiFi component configuration.
-Decreasing the values before passing the struct to <code>esp_wifi_init()</code>
-does the trick.
-</p>
-
-<p>
-To make it work in the Arduino IDE, I just had to stop using the
-Arduino <code>WiFi</code> object and use the ESP-IDF API directly.  One small
-snag I ran into was that the ESP-IDF version used by the Arduino Core
-is pretty old, and to initialize the network you had to call
-<code>tcpip_adapter_init()</code> instead of the current <code>esp_netif_init()</code>.
-Once I solved that, the network code compiles and runs with no
-problems.  There's just an annoying error that pops out in the serial
-complaining that I haven't created an event loop, which I think is
-required for the Arduino Core <code>WiFi</code> object to receive WiFi events.
-The game seems to run fine without it, though.
-</p>
-
-<p>
-As usual, the source code is here:
-<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/network">#network</a>
-  </div>
-</div>
-<div class="post">
-  <div class="post-title"><a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6">Porting Loser Corps to the ESP32 - Part 6</a></div>
-  <div class="post-date">2021-05-16</div>
-  <div class="post-content">
-<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-The game now runs with networking enabled while using the full 320x240
-resolution:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)" title="Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)">
-  <div class="image-caption">Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)</div>
-</div>
-
-<p>
-To fit WiFi and the two 320x240 framebuffers in memory, I had to make
-some changes: first, don't use Bluetooth -- so the Wiimote is out.
-Luckily I now can use the Wii Classic Controller (as shown in the
-picture) or Wii Nunchuk, so that's not a big deal.
-</p>
-
-<p>
-Second, I had to decrease the number of transmit and receive buffers
-used by the WiFi library.  This can't be changed in with the Arduino
-Core for the ESP32, so I can't use the Arduino IDE for this.  Using
-the ESP-IDF framework, this (and a lot more) can be changed with
-<code>idf.py menuconfig</code>:
-</p>
-
-<div class="image">
-  <img width="820" height="515" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers" title="Adjusting the number of WiFi receive buffers">
-  <div class="image-caption">Adjusting the number of WiFi receive buffers</div>
-</div>
-
-<p>
-Thankfully it's not too much of a hassle to use the same code with the
-two APIs (which is not that surprising, since the Arduino Core is just
-an added layer on top of the ESP-IDF).  The largest hurdle was to
-learn how to set the CPU clock using the ESP-IDF (it's a lot more
-involved than I thought, I ended up lifting code from the Arduino
-Core) and to support the Wiimote library, which uses the Bluetooth API
-from the Arduino Core (so once more I lifted some code from there).
-</p>
-
-<p>
-In the end, it was fun and I learned a little bit about FreeRTOS
-(which the Arduino Core completely hides) in order to run my code on
-one of the CPUs of the ESP32 and let the WiFi and other stuff use the
-other one.
-</p>
-
-<p>
-The other change in the game since the last update post was the
-addition of Wii Nunchuk and Classic Controller support via I2C with my
-<a href="https://github.com/moefh/esp32-wii-nunchuk">esp32-wii-nunchuk</a>
-library.
-</p>
-
-<p>
-After plugging the library to the game code, I noticed that sometimes
-the I2C read from the controller gets stuck for a little bit.  Usually
-that's not a big problem, but for this game any hiccup is really
-noticeable and annoying (the engine <b>really</b> wants to run at 60fps).
-So I had to add some functions to the library to run a loop that reads
-the controller state in a different CPU core than the game engine, and
-it ended up working really well.
-</p>
-
-<p>
-The source code for the version of the game that uses the Arduino API
-is here:
-<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>. I
-haven't published the version using the ESP-IDF yet, but it just adds
-some stuff to compile under ESP-IDF.
-</p>
-
-<p>
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
-    <a href="/tags/network">#network</a>
-    <a href="/tags/esp-now">#esp-now</a>
-  </div>
-</div>
 
 <div class="footer">
-    <div class="page-links">
-      <div class="nav-link nav-link-prev">
+    <div class="post-links">
+      <div class="nav-link nav-link-left">
       </div>
 
-      <div class="nav-link nav-link-page-num">Page 1/4</div>
+      <div class="nav-link nav-link-separator"></div>
       
-      <div class="nav-link nav-link-next">
-        <a href="/page2.html">Next &#x2192;</a>
+      <div class="nav-link nav-link-right">
+        older &#x2192;<br>
+        <a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a>
       </div>
 
     </div>

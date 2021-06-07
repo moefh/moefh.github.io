@@ -17,7 +17,7 @@
       <a href="/about">About</a>
     </div>
     <div class="header-nav-right">
-      <a href="/atom.xml"><img class="rss-icon" src="/css/images/rss.png"></a>
+      <a href="/atom.xml"><span class="rss-icon"></span></a>
     </div>
     <div class="header-title"><a href="/">moefh.github.io</a></div>
     <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
@@ -33,16 +33,19 @@
   <div class="post-date">2021-03-07</div>
   <div class="post-content">
 <p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
 Here's a demo video (click to open Youtube):
 </p>
 
-<p>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
-</p>
+<div>
+<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video" title="Youtube video">
+  <div class="image-caption">Youtube video</div>
+</div></a>
+</div>
 
 <p>
 (This video shows a slightly older version where collision detection
@@ -68,7 +71,10 @@ the stick -- it's really just a bunch of of buttons and
 conveniently placed on a PCB:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I'm using" title="The Arduino joystick shield I'm using">
+  <div class="image-caption">The Arduino joystick shield I'm using</div>
+</div>
 
 <p>
 I've connected all buttons pins, but the code only uses the C button
@@ -99,6 +105,7 @@ project.
   </div>
   <div class="post-tags">
     <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
     <a href="/tags/loser-corps">#loser-corps</a>
     <a href="/tags/vga">#vga</a>
     <a href="/tags/joystick">#joystick</a>
@@ -135,12 +142,16 @@ project.
       <div class="tag"><a href="/tags/assembly">assembly</a></div>
       <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
       <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
       <div class="tag"><a href="/tags/i2c">i2c</a></div>
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
       <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/pico">pico</a></div>
+      <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
+      <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
@@ -151,6 +162,7 @@ project.
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>
       <div class="month"><a href="/archives/2021/04">April 2021</a></div>
       <div class="month"><a href="/archives/2021/03">March 2021</a></div>

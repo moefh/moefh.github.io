@@ -35,8 +35,13 @@ a, a:visited {
 }
 
 .rss-icon {
+    display: inline-block;
     width: 16px;
     height: 16px;
+    background-image: url('images/rss.png');
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: contain;
 }
 
 .header-nav-left  { margin-top: 10px; float: left;  }

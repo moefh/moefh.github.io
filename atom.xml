@@ -4,12 +4,130 @@
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="http://raspberrypi:8081/atom.xml" rel="self"/>
   <link href="http://raspberrypi:8081/"/>
-  <updated>2021-05-23T19:49:31.000</updated>
+  <updated>2021-06-06T23:16:02.000</updated>
   <id>http://raspberrypi:8081/</id>
   <author>
     <name>MoeFH</name>
   </author>
-  <generator uri="https://moefh.github.io/">Bloog</generator>
+  <generator uri="https://moefh.github.io/">BloGen</generator>
+  <entry>
+    <title>Porting Loser Corps to the Raspberry Pi Pico</title>
+    <link href="http://raspberrypi:8081/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/"/>
+    <id>http://raspberrypi:8081/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/</id>
+    <published>2021-06-06T23:16:02.000</published>
+    <updated>2021-06-06T23:16:02.000</updated>
+    <content type="html"><![CDATA[<p>
+I decided to take a break from porting Loser Corps to the ESP32, and
+do something completely different: port Loser Corps to the Raspberry
+Pi Pico!
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/screen.jpg" alt="Loser Corps rendered on the Raspberry Pi  Pico" title="Loser Corps rendered on the Raspberry Pi  Pico">
+  <div class="image-caption">Loser Corps rendered on the Raspberry Pi  Pico</div>
+</div>
+
+<p>
+The
+<a href="https://www.raspberrypi.org/products/raspberry-pi-pico/specifications/">Pico</a>
+is smaller than the ESP32, with about half as much RAM, flash and
+clock frequency:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="right">ESP32-WROOM</th><th align="center">Feature</th><th align="left">Raspberry Pi Pico</th></tr>
+<tr>
+<td align="right">(2x) Tensilica Xtensa LX6</td><td align="center">Processor</td><td align="left">(2x) Arm Cortex-M0+</td></tr>
+<tr>
+<td align="right">240 MHz</td><td align="center">Clock</td><td align="left">133 MHz</td></tr>
+<tr>
+<td align="right">520 KB</td><td align="center">RAM</td><td align="left">264 KB</td></tr>
+<tr>
+<td align="right">4 MB</td><td align="center">Flash</td><td align="left">2 MB</td></tr>
+<tr>
+<td align="right">2.4 GHz</td><td align="center">WiFi</td><td align="left">nope</td></tr>
+</table></div></div>
+
+
+<p>
+The Pico (like the ESP32) can adjust its main clock frequency: 133 MHz
+is the official maximum, but I'm using it at 125 MHz because that
+makes VGA signal generation much simpler: the 12.5 MHz pixel clock
+required for the 320x240 VGA mode is exactly 1/10 of the main clock
+(well, technically it should be 12.59 MHz, but 12.5 is close enough).
+</p>
+
+<div class="image">
+  <img width="480" height="640" src="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/pico.jpg" alt="The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program." title="The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program.">
+  <div class="image-caption">The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program.</div>
+</div>
+
+<p>
+There are some <a href="https://github.com/raspberrypi/pico-playground/tree/master/scanvideo">example
+programs</a>
+that output VGA using an official <a href="https://github.com/raspberrypi/pico-extras/tree/master/src/common/pico_scanvideo">library provided by the Raspberry
+Pi
+Foundation</a>,
+but they don't work with my old CRT monitor.  I haven't looked at the
+library or the examples too closely, but it seems that the pixel clock
+they use is too far away from the spec for my monitor: 640x480 should
+be 25.18 MHz, and from what I can tell the examples use 24.0 MHz.
+</p>
+
+<p>
+One of the cool things about the Pico is that it has a programmable
+input/output (PIO) hardware interface, which is basically a tiny
+specialized processor that can run programs that perform I/O
+operations independently from the main cores.  I used the PIO (fed via
+DMA) for the VGA output.
+</p>
+
+<p>
+After a lot of trial and failure, I went with an extremely simple PIO
+program: it's just a single instruction that gets data from the DMA
+and feeds it one byte at a time to 8 output pins.  The data has to be
+prepared exactly the right way so the output is a correctly-timed VGA
+signal, which is stays right as long as the PIO program runs at a
+fixed frequency equal to the VGA pixel clock.  In practice, this means
+that the images still need vertical and horizontal sync bits embedded
+in them, like in the ESP32.
+</p>
+
+<p>
+Maybe I will make a more complex PIO program when I get more
+experience with it. It would be nice to make the program generate the
+vertical and horizontal sync signals automatically, and free 2 bits of
+image data for colors: we could have 3:3:2 bits for red:green:blue,
+increasing the number of colors from 64 to 256.  For now, though, the
+output is exactly the same as the ESP32 (2:2:2), which is nice because
+I don't have to make new homemade DAC boards to connect to the
+monitor.  Still, a really good advantage of the PIO (even running my
+brain-dead program) over the I2S bus we use on the ESP32 is that it
+doesn't scramble the byte order.
+</p>
+
+<p>
+Even after everything was running, I ended up with problems with the
+IRQ handler for the DMA completion (which restarts the DMA to keep the
+PIO fed with data).  When the CPU got too busy (for example, in areas
+of the map with too many things on the screen), the IRQ was being
+delayed enough do disrupt the video signal, and my monitor <b>really</b>
+didn't like it.  In the end I managed to make the render loop run
+entirely without CPU supervision (it runs entirely on DMA shoving data
+into the PIO), and it only generates and IRQ for frame counting, which
+the game code uses to synchronize the framebuffer swapping (to avoid
+screen tearing).
+</p>
+
+<p>
+The only parts actually done right now are the rendering and joystick
+input (Wii nunchuk and classic controller only). The character control
+and collision detection will be done soon.
+
+</p>]]></content>
+  </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 7</title>
     <link href="http://raspberrypi:8081/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/"/>
@@ -17,7 +135,7 @@
     <published>2021-05-23T19:49:31.000</published>
     <updated>2021-05-23T19:49:31.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -25,7 +143,10 @@ The game now sends shots over the network, so players can see each
 other's shots:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg"><span class="image-caption">Two players shooting</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg" alt="Two players shooting" title="Two players shooting">
+  <div class="image-caption">Two players shooting</div>
+</div>
 
 <p>
 (Please excuse me for not showing the two systems and screens
@@ -69,7 +190,7 @@ As usual, the source code is here:
     <published>2021-05-16T23:28:12.000</published>
     <updated>2021-05-16T23:28:12.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -77,9 +198,10 @@ The game now runs with networking enabled while using the full 320x240
 resolution:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg"><span class="image-caption">Two ESP32s talking to each other via ESP-NOW, each one controlling a
-character<br>(note also the Wii Classic
-Controller)</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/photo.jpg" alt="Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)" title="Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)">
+  <div class="image-caption">Two ESP32s talking to each other via ESP-NOW, each one controlling a character (note also the Wii Classic Controller)</div>
+</div>
 
 <p>
 To fit WiFi and the two 320x240 framebuffers in memory, I had to make
@@ -96,7 +218,10 @@ the ESP-IDF framework, this (and a lot more) can be changed with
 <code>idf.py menuconfig</code>:
 </p>
 
-<span class="image"><img width="820" height="515" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png"><span class="image-caption">Adjusting the number of WiFi receive buffers</span></span>
+<div class="image">
+  <img width="820" height="515" src="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/menuconfig.png" alt="Adjusting the number of WiFi receive buffers" title="Adjusting the number of WiFi receive buffers">
+  <div class="image-caption">Adjusting the number of WiFi receive buffers</div>
+</div>
 
 <p>
 Thankfully it's not too much of a hassle to use the same code with the
@@ -176,7 +301,10 @@ library</a> also via I2C,
 but using the <code>Wire</code> library:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg"><span class="image-caption">Testing the Wii Classic Controler</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler" title="Testing the Wii Classic Controler">
+  <div class="image-caption">Testing the Wii Classic Controler</div>
+</div>
 
 <p>
 When using the Wii Classic Controller, the screen shows two triangles
@@ -215,7 +343,7 @@ The source code for the library is here:
     <published>2021-04-17T14:04:59.000</published>
     <updated>2021-04-17T14:04:59.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -225,9 +353,10 @@ There can be at most 14 shots active at once, and they do nothing but
 fly in a straight line until they hit a wall or the edge of the map.
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg"><span class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects,<br>in
- reality it's less blurry than shown
- here)</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)" title="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)">
+  <div class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)</div>
+</div>
 
 <p>
 I also ported the game to use the ESP-IDF framework (as opposed to the
@@ -256,7 +385,7 @@ every post).
     <published>2021-04-04T00:10:58.000</published>
     <updated>2021-04-04T00:10:58.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -264,9 +393,15 @@ Working on the game network code, I was able to make two players (each
 running their own game a separate ESP32) see each other's characters:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg"><span class="image-caption">First player (using the Arduino Joystick)</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg" alt="First player (using the Arduino Joystick)" title="First player (using the Arduino Joystick)">
+  <div class="image-caption">First player (using the Arduino Joystick)</div>
+</div>
 
-<span class="image"><img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg"><span class="image-caption">Second player (using the Wiimote).</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg" alt="Second player (using the Wiimote)." title="Second player (using the Wiimote).">
+  <div class="image-caption">Second player (using the Wiimote).</div>
+</div>
 
 <p>
 They're using
@@ -339,13 +474,25 @@ This caused quite a mess in the colors, I'm surprised I didn't notice
 it before:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg"><span class="image-caption">Comparison showing that the old board has wrong red levels</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels" title="Comparison showing that the old board has wrong red levels">
+  <div class="image-caption">Comparison showing that the old board has wrong red levels</div>
+</div>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg"><span class="image-caption">Zoom in the "P"</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the "P"" title="Zoom in the "P"">
+  <div class="image-caption">Zoom in the "P"</div>
+</div>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg"><span class="image-caption">Bridge and torch</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch" title="Bridge and torch">
+  <div class="image-caption">Bridge and torch</div>
+</div>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg"><span class="image-caption">Zoom in the torch</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch" title="Zoom in the torch">
+  <div class="image-caption">Zoom in the torch</div>
+</div>
 
 <p>
 The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
@@ -388,14 +535,23 @@ And finally, just for reference, here are all of the homemade boards
 I'm using in this project:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg"><span class="image-caption">New board</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board" title="New board">
+  <div class="image-caption">New board</div>
+</div>
 
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg"><span class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don't cross, unlike the blue and green ones)" title="Old board (notice that the red wires don't cross, unlike the blue and green ones)">
+  <div class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</div>
+</div>
 
-<p>
-<span class="image"><img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg"><span class="image-caption">DACs</span></span>
+<div>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs" title="DACs">
+  <div class="image-caption">DACs</div>
+</div>
 
-</p>]]></content>
+</div>]]></content>
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 3</title>
@@ -404,7 +560,7 @@ I'm using in this project:
     <published>2021-03-27T16:11:51.000</published>
     <updated>2021-03-27T16:11:51.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -446,13 +602,19 @@ resistors with good values when I made it, so I finally got some new
 resistors and made a new one:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg"><span class="image-caption">New VGA connector with DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs" title="New VGA connector with DACs">
+  <div class="image-caption">New VGA connector with DACs</div>
+</div>
 
 <p>
 For comparison, here's the old one:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg"><span class="image-caption">Old VGA connector with DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs" title="Old VGA connector with DACs">
+  <div class="image-caption">Old VGA connector with DACs</div>
+</div>
 
 <p>
 To see why the new DACs are better than the old ones, we have to talk
@@ -498,7 +660,10 @@ The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
 resistors to generate the desired output voltages:
 </p>
 
-<span class="image"><img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png"><span class="image-caption">DAC schematic (for each color component)</span></span>
+<div class="image">
+  <img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)" title="DAC schematic (for each color component)">
+  <div class="image-caption">DAC schematic (for each color component)</div>
+</div>
 
 <p>
 That's the DAC. We just have to choose values for R1 and R2 so that
@@ -514,7 +679,10 @@ available at the time. The new DAC has 1KΩ and 470Ω, which outputs
 voltages closer to what we want:
 </p>
 
-<span class="image"><img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png"><span class="image-caption">DAC output voltages (dotted lines show theoretical best)</span></span>
+<div class="image">
+  <img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)" title="DAC output voltages (dotted lines show theoretical best)">
+  <div class="image-caption">DAC output voltages (dotted lines show theoretical best)</div>
+</div>
 
 <p>
 The dotted lines show the theoretical best values for each pin value
@@ -530,7 +698,10 @@ I'm not sure the image result is that different, but for the record
 here's a photo of the game running with the new DACs:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg"><span class="image-caption">Game screen with the new DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs" title="Game screen with the new DACs">
+  <div class="image-caption">Game screen with the new DACs</div>
+</div>
 
 <p class="header-2">Rewriting the VGA Output Code</p>
 
@@ -585,7 +756,10 @@ draw pixel-by-pixel with it than with Gimp.
 Here's an image of the 6x8 font:
 </p>
 
-<span class="image"><img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png"><span class="image-caption">The new font</span></span>
+<div class="image">
+  <img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font" title="The new font">
+  <div class="image-caption">The new font</div>
+</div>
 
 <p>
 (The yellow/greenish background is what I used when drawing the font.)
@@ -608,16 +782,19 @@ of each one.
     <published>2021-03-07T17:02:26.000</published>
     <updated>2021-03-07T17:02:26.000</updated>
     <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
 Here's a demo video (click to open Youtube):
 </p>
 
-<p>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
-</p>
+<div>
+<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video" title="Youtube video">
+  <div class="image-caption">Youtube video</div>
+</div></a>
+</div>
 
 <p>
 (This video shows a slightly older version where collision detection
@@ -643,7 +820,10 @@ the stick -- it's really just a bunch of of buttons and
 conveniently placed on a PCB:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I'm using" title="The Arduino joystick shield I'm using">
+  <div class="image-caption">The Arduino joystick shield I'm using</div>
+</div>
 
 <p>
 I've connected all buttons pins, but the code only uses the C button
@@ -679,7 +859,7 @@ project.
     <published>2021-02-28T15:17:35.000</published>
     <updated>2021-02-28T15:17:35.000</updated>
     <content type="html"><![CDATA[<p>
-<i>(See <a href="/tags/loser-corps">all posts about the port</a>)</i>
+<i>(See <a href="/tags/esp32-loser">all posts about the port</a>)</i>
 </p>
 
 <p>
@@ -705,7 +885,10 @@ with tiles, some sprites and some foreground tiles. It's probably a
 reasonable test of how fast things will render:
 </p>
 
-<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg"><span class="image-caption">The whole setup</span></span>
+<div class="image">
+  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup" title="The whole setup">
+  <div class="image-caption">The whole setup</div>
+</div>
 
 <p>
 The game images look a little rough when converted to 64 colors,
@@ -713,7 +896,10 @@ especially since the palette is fixed by the hardware, but I think I
 can get used to it:
 </p>
 
-<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg"><span class="image-caption">Screenshot of the game</span></span>
+<div class="image">
+  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game" title="Screenshot of the game">
+  <div class="image-caption">Screenshot of the game</div>
+</div>
 
 <p>
 I managed to get a descent render speed after I started writing to the
@@ -751,89 +937,6 @@ it gets once I remove the restriction on the horizontal alignment.
 
 <p>
 All in all, I'm very pleased with the progress.
-
-</p>]]></content>
-  </entry>
-  <entry>
-    <title>ESP32 VGA output</title>
-    <link href="http://raspberrypi:8081/2021/02/21/ESP32-VGA-output/"/>
-    <id>http://raspberrypi:8081/2021/02/21/ESP32-VGA-output/</id>
-    <published>2021-02-21T15:48:01.000</published>
-    <updated>2021-02-21T15:48:01.000</updated>
-    <content type="html"><![CDATA[<p>
-Some time ago I made a VGA connector with a simple DAC made of
-resistors to use with old FPGA board, but since the board has very
-little RAM I wasn't able to do anything <a href="https://github.com/moefh/fpga-vga-driver">too
-interesting</a> (the DAC shown
-there has only 1 bit per color channel, I later made an improved one
-with 2 bits per channel).  But as it turns out, some crazy people made
-the ESP32 output a VGA signal using I2S -- I just tested it and it
-seems to work perfectly!
-</p>
-
-<p>
-I used <a href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio Di
-Vittorio, but there's also
-<a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I'll
-probably check out later.  Here's one of FabGL's examples in action
-(pay no attention to the smudges on the monitor, it's very old):
-</p>
-
-<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image3.jpg"><span class="image-caption">ESP32 outputting to an old CRT monitor</span></span>
-
-<p>
-Here's a close-up of the ESP32 showing the connected pins.
-</p>
-
-<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image7.jpg"><span class="image-caption">Showing the connected pins</span></span>
-
-<p>
-I'm using the default FabGL pinout, which is:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<th align="right">ESP32 pin</th><th align="left">Connection</th></tr>
-<tr>
-<td align="right">23</td><td align="left">H Sync</td></tr>
-<tr>
-<td align="right">15</td><td align="left">V Sync</td></tr>
-<tr>
-<td align="right">22</td><td align="left">Red (high bit)</td></tr>
-<tr>
-<td align="right">21</td><td align="left">Red (low bit)</td></tr>
-<tr>
-<td align="right">19</td><td align="left">Green (high bit)</td></tr>
-<tr>
-<td align="right">18</td><td align="left">Green (low bit)</td></tr>
-<tr>
-<td align="right">5</td><td align="left">Blue (high bit)</td></tr>
-<tr>
-<td align="right">4</td><td align="left">Blue (low bit)</td></tr>
-</table></div></div>
-
-
-<p>
-And finally, here's my hacky VGA connector/DAC with 2 bits per color
-channel giving a total of 64 colors:
-</p>
-
-<span class="image"><img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image6.jpg"><span class="image-caption">My homemade VGA connector/DAC</span></span>
-
-<p>
-The other side of the board is kind of a mess (this was one of my
-first soldering jobs), but it works well enough.  And, before you ask,
-all of the jumpers are inserted all the way in, but some have longer
-leads than others -- they're really crappy jumpers!
-</p>
-
-<p>
-I might try to port <a href="https://github.com/moefh/loser-corps">Loser
-Corps</a> to this thing. No idea
-how well it will work over Wifi, the network code is <b>very</b> simplistic
-and probably doesn't work well anywhere other than Ethernet. We'll
-see.
 
 </p>]]></content>
   </entry>

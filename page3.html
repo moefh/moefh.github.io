@@ -17,7 +17,7 @@
       <a href="/about">About</a>
     </div>
     <div class="header-nav-right">
-      <a href="/atom.xml"><img class="rss-icon" src="/css/images/rss.png"></a>
+      <a href="/atom.xml"><span class="rss-icon"></span></a>
     </div>
     <div class="header-title"><a href="/">moefh.github.io</a></div>
     <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
@@ -29,11 +29,110 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a></div>
+  <div class="post-date">2021-04-02</div>
+  <div class="post-content">
+<p>
+To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
+a new board for the ESP32 so I can have two of them running the game
+and talking to each other.  The new board was supposed to be just a
+copy of the original one, but I discovered a silly mistake I made in
+the original wiring: the red-high and red-low wires were reversed.
+This caused quite a mess in the colors, I'm surprised I didn't notice
+it before:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels" title="Comparison showing that the old board has wrong red levels">
+  <div class="image-caption">Comparison showing that the old board has wrong red levels</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the "P"" title="Zoom in the "P"">
+  <div class="image-caption">Zoom in the "P"</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch" title="Bridge and torch">
+  <div class="image-caption">Bridge and torch</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch" title="Zoom in the torch">
+  <div class="image-caption">Zoom in the torch</div>
+</div>
+
+<p>
+The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
+not sure I can see any difference between the old an new DACs, to be
+honest (my phone camera doesn't help -- its automatic color balance
+messes up the colors way more than my DACs, apparently).
+</p>
+
+<p>
+In any case, it's easy to see the difference between the old and new
+boards. Not only the new board's images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the "P"
+is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
+red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
+red</code>-><code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
+<tr>
+<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
+<tr>
+<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
+</table></div></div>
+
+
+<p>
+Of course, since we can select the ESP32 output pins any way we want,
+it's easy to fix this in software by simply changing the pin
+assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
+don't feel like making a third board right now.
+</p>
+
+<p>
+And finally, just for reference, here are all of the homemade boards
+I'm using in this project:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board" title="New board">
+  <div class="image-caption">New board</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don't cross, unlike the blue and green ones)" title="Old board (notice that the red wires don't cross, unlike the blue and green ones)">
+  <div class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</div>
+</div>
+
+<div>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs" title="DACs">
+  <div class="image-caption">DACs</div>
+</div>
+
+</div>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/perfboard">#perfboard</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">Porting Loser Corps to the ESP32 - Part 3</a></div>
   <div class="post-date">2021-03-27</div>
   <div class="post-content">
 <p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
@@ -75,13 +174,19 @@ resistors with good values when I made it, so I finally got some new
 resistors and made a new one:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg"><span class="image-caption">New VGA connector with DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs" title="New VGA connector with DACs">
+  <div class="image-caption">New VGA connector with DACs</div>
+</div>
 
 <p>
 For comparison, here's the old one:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg"><span class="image-caption">Old VGA connector with DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs" title="Old VGA connector with DACs">
+  <div class="image-caption">Old VGA connector with DACs</div>
+</div>
 
 <p>
 To see why the new DACs are better than the old ones, we have to talk
@@ -127,7 +232,10 @@ The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
 resistors to generate the desired output voltages:
 </p>
 
-<span class="image"><img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png"><span class="image-caption">DAC schematic (for each color component)</span></span>
+<div class="image">
+  <img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)" title="DAC schematic (for each color component)">
+  <div class="image-caption">DAC schematic (for each color component)</div>
+</div>
 
 <p>
 That's the DAC. We just have to choose values for R1 and R2 so that
@@ -143,7 +251,10 @@ available at the time. The new DAC has 1KΩ and 470Ω, which outputs
 voltages closer to what we want:
 </p>
 
-<span class="image"><img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png"><span class="image-caption">DAC output voltages (dotted lines show theoretical best)</span></span>
+<div class="image">
+  <img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)" title="DAC output voltages (dotted lines show theoretical best)">
+  <div class="image-caption">DAC output voltages (dotted lines show theoretical best)</div>
+</div>
 
 <p>
 The dotted lines show the theoretical best values for each pin value
@@ -159,7 +270,10 @@ I'm not sure the image result is that different, but for the record
 here's a photo of the game running with the new DACs:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg"><span class="image-caption">Game screen with the new DACs</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs" title="Game screen with the new DACs">
+  <div class="image-caption">Game screen with the new DACs</div>
+</div>
 
 <p class="header-2">Rewriting the VGA Output Code</p>
 
@@ -214,7 +328,10 @@ draw pixel-by-pixel with it than with Gimp.
 Here's an image of the 6x8 font:
 </p>
 
-<span class="image"><img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png"><span class="image-caption">The new font</span></span>
+<div class="image">
+  <img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font" title="The new font">
+  <div class="image-caption">The new font</div>
+</div>
 
 <p>
 (The yellow/greenish background is what I used when drawing the font.)
@@ -232,6 +349,7 @@ of each one.
   </div>
   <div class="post-tags">
     <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
     <a href="/tags/loser-corps">#loser-corps</a>
     <a href="/tags/vga">#vga</a>
     <a href="/tags/wiimote">#wiimote</a>
@@ -242,16 +360,19 @@ of each one.
   <div class="post-date">2021-03-07</div>
   <div class="post-content">
 <p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/loser-corps">all posts about the port</a>).</i>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
 </p>
 
 <p>
 Here's a demo video (click to open Youtube):
 </p>
 
-<p>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg"><span class="image-caption">Youtube video</span></span></a>
-</p>
+<div>
+<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video" title="Youtube video">
+  <div class="image-caption">Youtube video</div>
+</div></a>
+</div>
 
 <p>
 (This video shows a slightly older version where collision detection
@@ -277,7 +398,10 @@ the stick -- it's really just a bunch of of buttons and
 conveniently placed on a PCB:
 </p>
 
-<span class="image"><img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg"><span class="image-caption">The Arduino joystick shield I'm using</span></span>
+<div class="image">
+  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I'm using" title="The Arduino joystick shield I'm using">
+  <div class="image-caption">The Arduino joystick shield I'm using</div>
+</div>
 
 <p>
 I've connected all buttons pins, but the code only uses the C button
@@ -308,95 +432,10 @@ project.
   </div>
   <div class="post-tags">
     <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
     <a href="/tags/loser-corps">#loser-corps</a>
     <a href="/tags/vga">#vga</a>
     <a href="/tags/joystick">#joystick</a>
-  </div>
-</div>
-<div class="post">
-  <div class="post-title"><a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32">Porting Loser Corps to the ESP32</a></div>
-  <div class="post-date">2021-02-28</div>
-  <div class="post-content">
-<p>
-<i>(See <a href="/tags/loser-corps">all posts about the port</a>)</i>
-</p>
-
-<p>
-I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
-a video game I and a few friends made in the old days of 1998-1999, to
-the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
-</p>
-
-<p>
-I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
-generate the VGA output, and I'm still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
-board I made to connect the pins from the ESP32 devkit to the VGA
-breakout board without the mess I had in the breadboard, and an
-improvised cardboard box to hold the VGA plug in place (it works
-surprisingly well).  I'll probably make a nicer board and box when I
-add joystick input and sound output.
-</p>
-
-<p>
-The code currently renders a static screen with the background filled
-with tiles, some sprites and some foreground tiles. It's probably a
-reasonable test of how fast things will render:
-</p>
-
-<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg"><span class="image-caption">The whole setup</span></span>
-
-<p>
-The game images look a little rough when converted to 64 colors,
-especially since the palette is fixed by the hardware, but I think I
-can get used to it:
-</p>
-
-<span class="image"><img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg"><span class="image-caption">Screenshot of the game</span></span>
-
-<p>
-I managed to get a descent render speed after I started writing to the
-screen 4 pixels at a time. The annoying thing about this whole thing
-is that because of the way the ESP32 I2S DMA works, the data in the
-framebuffer has to be set in a weird order:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
-<tr>
-<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
-</table></div></div>
-
-
-<p>
-Another annoying thing is that the VSync and HSync bits for the VGA
-signal have to go inside every pixel in the framebuffer. To make
-things fast, I pre-baked these bits in the image data, which means
-that if I want to change to a VGA mode that happens to have different
-VSync or HSync polarity, I'll have to re-convert the images and
-recompile everything. Not a big deal, but it's annoying.
-</p>
-
-<p>
-Currently my code only supports placing images aligned horizontally to
-4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
-the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
-every frame (since I'm going to overwrite everything anyway), I
-managed to get around 150 frames per second. We'll have to see how bad
-it gets once I remove the restriction on the horizontal alignment.
-</p>
-
-<p>
-All in all, I'm very pleased with the progress.
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
   </div>
 </div>
 
@@ -428,12 +467,16 @@ All in all, I'm very pleased with the progress.
       <div class="tag"><a href="/tags/assembly">assembly</a></div>
       <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
       <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
       <div class="tag"><a href="/tags/i2c">i2c</a></div>
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
       <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/pico">pico</a></div>
+      <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
+      <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
@@ -444,6 +487,7 @@ All in all, I'm very pleased with the progress.
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>
       <div class="month"><a href="/archives/2021/04">April 2021</a></div>
       <div class="month"><a href="/archives/2021/03">March 2021</a></div>
