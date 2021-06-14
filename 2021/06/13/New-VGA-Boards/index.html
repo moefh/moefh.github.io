@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <title>moefh.github.io</title>
+</head>
+<body>
+  <div class="logo"></div>
+  <div class="header">
+    <div class="header-nav-left">
+      <a href="/">Home</a>
+      <a href="/archives">Archives</a>
+      <a href="/about">About</a>
+    </div>
+    <div class="header-nav-right">
+      <a href="/atom.xml"><span class="rss-icon"></span></a>
+    </div>
+    <div class="header-title"><a href="/">moefh.github.io</a></div>
+    <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
+  </div>
+
+
+<div class="content">
+
+<div class="content-left">
+
+<div class="post">
+  <div class="post-title"><a href="/2021/06/13/New-VGA-Boards">New VGA Boards</a></div>
+  <div class="post-date">2021-06-13</div>
+  <div class="post-content">
+<p>
+In the process of creating a new perfboard to connect the Pico to a
+VGA monitor, I realized that all the VGA DACs I made so far are using
+only half the voltage range, which results in a very dark image all
+around.
+</p>
+
+<p>
+Here's what I figure happened: the initial schematic I drew for a the
+DAC used a 75 Ohm resistor to ground, which I initially put there to
+represent the one inside the monitor (so I could calculate the values
+for the other resistors). Later, when building the boards, I put that
+75 Ohm resistor on the board, so there were TWO 75 Ohm resistors to
+ground in parallel, which results in everything being roughly half the
+voltage it's supposed to be.  Later, when looking at that schematic, I
+though I had put that resistor there for impedance matching (which I
+knew was not really right), so I left it alone.
+</p>
+
+<p>
+When I started builiding a perfboard for the Pico (to make it more
+permanent that the breadboard I had last week), I decided to calculate
+everything from scratch, and I realized the mistake.  My correction
+still uses a 75 Ohm to ground, but the other resistors have much lower
+values to compensate.  The current drawn from the pins is much larger,
+but still below 15 mA, so I think that will bo OK for the Pico and the
+ESP32.
+</p>
+
+<p>
+Here's the new schematic for each DAC:
+</p>
+
+<div class="image">
+  <img width="313" height="281" src="/2021/06/13/New-VGA-Boards/dac-schematic.png" alt="New DAC schematic" title="New DAC schematic">
+  <div class="image-caption">New DAC schematic</div>
+</div>
+
+<p>
+And here's the Loser Corps screen with the new DACs:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-new-dacs.jpg" alt="Loser Corps running on the Pico with the new DACs" title="Loser Corps running on the Pico with the new DACs">
+  <div class="image-caption">Loser Corps running on the Pico with the new DACs</div>
+</div>
+
+<p>
+Here's the screen with the old DACs for comparison:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-old-dacs.jpg" alt="Screen with the old DACs" title="Screen with the old DACs">
+  <div class="image-caption">Screen with the old DACs</div>
+</div>
+
+<p>
+The new perfboards have the resistors soldered on the main board where
+the the Pico and the ESP32 are inserted, and the small boards with the
+VGA connectors have with nothing but female headers with 6 pins to
+connect to the main board.  This way, if I ever want to change DACs
+again, I don't have to solder wires to the VGA connector (which is a
+very unpleasant job).
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/perfboards.jpg" alt="New perfboards" title="New perfboards">
+  <div class="image-caption">New perfboards</div>
+</div>
+
+<p>
+The Pico board has two sets of connections for I2C (for the Wii
+Nunchuk). I'll add these connections to the ESP32 board later.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/pico">#pico</a>
+    <a href="/tags/perfboard">#perfboard</a>
+  </div>
+</div>
+
+<div class="footer">
+    <div class="post-links">
+      <div class="nav-link nav-link-left">
+      </div>
+
+      <div class="nav-link nav-link-separator"></div>
+      
+      <div class="nav-link nav-link-right">
+        older &#x2192;<br>
+        <a href="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico">Porting Loser Corps to the Raspberry Pi Pico</a>
+      </div>
+
+    </div>
+
+  <div class="copyright">Copyright (C) 2021 MoeFH</div>
+
+</div>
+
+</div>
+
+<div class="content-right">
+  <div class="tag-list">
+    <div class="title">TAGS</div>
+    <div class="tags">
+      <div class="tag"><a href="/tags/arm">arm</a></div>
+      <div class="tag"><a href="/tags/assembly">assembly</a></div>
+      <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
+      <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
+      <div class="tag"><a href="/tags/i2c">i2c</a></div>
+      <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/network">network</a></div>
+      <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
+      <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/pico">pico</a></div>
+      <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
+      <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
+      <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/vga">vga</a></div>
+      <div class="tag"><a href="/tags/wii">wii</a></div>
+      <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
+    </div>
+  </div>
+
+  <div class="month-list">
+    <div class="title">ARCHIVES</div>
+    <div class="months">
+      <div class="month"><a href="/archives/2021/06">June 2021</a></div>
+      <div class="month"><a href="/archives/2021/05">May 2021</a></div>
+      <div class="month"><a href="/archives/2021/04">April 2021</a></div>
+      <div class="month"><a href="/archives/2021/03">March 2021</a></div>
+      <div class="month"><a href="/archives/2021/02">Ferbuary 2021</a></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+</body>
+</html>
+

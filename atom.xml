@@ -4,12 +4,94 @@
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="http://raspberrypi:8081/atom.xml" rel="self"/>
   <link href="http://raspberrypi:8081/"/>
-  <updated>2021-06-06T23:16:02.000</updated>
+  <updated>2021-06-13T20:19:43.000</updated>
   <id>http://raspberrypi:8081/</id>
   <author>
     <name>MoeFH</name>
   </author>
   <generator uri="https://moefh.github.io/">BloGen</generator>
+  <entry>
+    <title>New VGA Boards</title>
+    <link href="http://raspberrypi:8081/2021/06/13/New-VGA-Boards/"/>
+    <id>http://raspberrypi:8081/2021/06/13/New-VGA-Boards/</id>
+    <published>2021-06-13T20:19:43.000</published>
+    <updated>2021-06-13T20:19:43.000</updated>
+    <content type="html"><![CDATA[<p>
+In the process of creating a new perfboard to connect the Pico to a
+VGA monitor, I realized that all the VGA DACs I made so far are using
+only half the voltage range, which results in a very dark image all
+around.
+</p>
+
+<p>
+Here's what I figure happened: the initial schematic I drew for a the
+DAC used a 75 Ohm resistor to ground, which I initially put there to
+represent the one inside the monitor (so I could calculate the values
+for the other resistors). Later, when building the boards, I put that
+75 Ohm resistor on the board, so there were TWO 75 Ohm resistors to
+ground in parallel, which results in everything being roughly half the
+voltage it's supposed to be.  Later, when looking at that schematic, I
+though I had put that resistor there for impedance matching (which I
+knew was not really right), so I left it alone.
+</p>
+
+<p>
+When I started builiding a perfboard for the Pico (to make it more
+permanent that the breadboard I had last week), I decided to calculate
+everything from scratch, and I realized the mistake.  My correction
+still uses a 75 Ohm to ground, but the other resistors have much lower
+values to compensate.  The current drawn from the pins is much larger,
+but still below 15 mA, so I think that will bo OK for the Pico and the
+ESP32.
+</p>
+
+<p>
+Here's the new schematic for each DAC:
+</p>
+
+<div class="image">
+  <img width="313" height="281" src="/2021/06/13/New-VGA-Boards/dac-schematic.png" alt="New DAC schematic" title="New DAC schematic">
+  <div class="image-caption">New DAC schematic</div>
+</div>
+
+<p>
+And here's the Loser Corps screen with the new DACs:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-new-dacs.jpg" alt="Loser Corps running on the Pico with the new DACs" title="Loser Corps running on the Pico with the new DACs">
+  <div class="image-caption">Loser Corps running on the Pico with the new DACs</div>
+</div>
+
+<p>
+Here's the screen with the old DACs for comparison:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-old-dacs.jpg" alt="Screen with the old DACs" title="Screen with the old DACs">
+  <div class="image-caption">Screen with the old DACs</div>
+</div>
+
+<p>
+The new perfboards have the resistors soldered on the main board where
+the the Pico and the ESP32 are inserted, and the small boards with the
+VGA connectors have with nothing but female headers with 6 pins to
+connect to the main board.  This way, if I ever want to change DACs
+again, I don't have to solder wires to the VGA connector (which is a
+very unpleasant job).
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/perfboards.jpg" alt="New perfboards" title="New perfboards">
+  <div class="image-caption">New perfboards</div>
+</div>
+
+<p>
+The Pico board has two sets of connections for I2C (for the Wii
+Nunchuk). I'll add these connections to the ESP32 board later.
+
+</p>]]></content>
+  </entry>
   <entry>
     <title>Porting Loser Corps to the Raspberry Pi Pico</title>
     <link href="http://raspberrypi:8081/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/"/>
@@ -849,94 +931,6 @@ maybe that's the problem?
 Another nice option would be to use the Wiimote itself, which uses
 Bluetooth.  That's probably the next thing I'll work on in this
 project.
-
-</p>]]></content>
-  </entry>
-  <entry>
-    <title>Porting Loser Corps to the ESP32</title>
-    <link href="http://raspberrypi:8081/2021/02/28/Porting-Loser-Corps-to-the-ESP32/"/>
-    <id>http://raspberrypi:8081/2021/02/28/Porting-Loser-Corps-to-the-ESP32/</id>
-    <published>2021-02-28T15:17:35.000</published>
-    <updated>2021-02-28T15:17:35.000</updated>
-    <content type="html"><![CDATA[<p>
-<i>(See <a href="/tags/esp32-loser">all posts about the port</a>)</i>
-</p>
-
-<p>
-I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
-a video game I and a few friends made in the old days of 1998-1999, to
-the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
-</p>
-
-<p>
-I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
-generate the VGA output, and I'm still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
-board I made to connect the pins from the ESP32 devkit to the VGA
-breakout board without the mess I had in the breadboard, and an
-improvised cardboard box to hold the VGA plug in place (it works
-surprisingly well).  I'll probably make a nicer board and box when I
-add joystick input and sound output.
-</p>
-
-<p>
-The code currently renders a static screen with the background filled
-with tiles, some sprites and some foreground tiles. It's probably a
-reasonable test of how fast things will render:
-</p>
-
-<div class="image">
-  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup" title="The whole setup">
-  <div class="image-caption">The whole setup</div>
-</div>
-
-<p>
-The game images look a little rough when converted to 64 colors,
-especially since the palette is fixed by the hardware, but I think I
-can get used to it:
-</p>
-
-<div class="image">
-  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game" title="Screenshot of the game">
-  <div class="image-caption">Screenshot of the game</div>
-</div>
-
-<p>
-I managed to get a descent render speed after I started writing to the
-screen 4 pixels at a time. The annoying thing about this whole thing
-is that because of the way the ESP32 I2S DMA works, the data in the
-framebuffer has to be set in a weird order:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
-<tr>
-<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
-</table></div></div>
-
-
-<p>
-Another annoying thing is that the VSync and HSync bits for the VGA
-signal have to go inside every pixel in the framebuffer. To make
-things fast, I pre-baked these bits in the image data, which means
-that if I want to change to a VGA mode that happens to have different
-VSync or HSync polarity, I'll have to re-convert the images and
-recompile everything. Not a big deal, but it's annoying.
-</p>
-
-<p>
-Currently my code only supports placing images aligned horizontally to
-4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
-the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
-every frame (since I'm going to overwrite everything anyway), I
-managed to get around 150 frames per second. We'll have to see how bad
-it gets once I remove the restriction on the horizontal alignment.
-</p>
-
-<p>
-All in all, I'm very pleased with the progress.
 
 </p>]]></content>
   </entry>

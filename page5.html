@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="alternate" href="/atom.xml" title="moefh.github.io" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <title>moefh.github.io</title>
+</head>
+<body>
+  <div class="logo"></div>
+  <div class="header">
+    <div class="header-nav-left">
+      <a href="/">Home</a>
+      <a href="/archives">Archives</a>
+      <a href="/about">About</a>
+    </div>
+    <div class="header-nav-right">
+      <a href="/atom.xml"><span class="rss-icon"></span></a>
+    </div>
+    <div class="header-title"><a href="/">moefh.github.io</a></div>
+    <div class="header-subtitle">The Magic Smoke Has Left the Building</div>
+  </div>
+
+
+<div class="content">
+
+<div class="content-left">
+
+<div class="post">
+  <div class="post-title"><a href="/2021/02/15/STM32-with-pure-assembly">STM32 with pure assembly</a></div>
+  <div class="post-date">2021-02-15</div>
+  <div class="post-content">
+<p>
+I was finally able to get my hands on an STM32!  This board (sometimes
+called "Blue Pill") is pretty cheap and has a STM32F103C8T6 chip on
+it:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/02/15/STM32-with-pure-assembly/image1.jpg" alt="ST-Link programmer connected to the Blue Pill" title="ST-Link programmer connected to the Blue Pill">
+  <div class="image-caption">ST-Link programmer connected to the Blue Pill</div>
+</div>
+
+<p>
+The STM32F103C8T6 chip has an ARM Cortex-M3 core, 20KB of SRAM and
+64KB of flash.  I have great memories of playing with ARM processors
+with the Game Boy Advance (ARM7TDMI) and Nintendo DS (ARM946E-S), so I
+decided to try to write some stuff using just assembly.
+</p>
+
+<p>
+The whole deal was much easier than I expected. In the Nintendo DS
+days I had to compile my own gcc and binutils to be able to build
+binaries, and then use a "backup" flash cartridge to run them in the
+hardware. Today things are much easier: the "ST-Link" programmer is
+very cheap (although what I got is probably a clone), the Arduino IDE
+supports STM32 with a simple change in its configuration, and people
+make Linux packages for the cross-compiler and other tools (there's
+also the STM32CubeIDE, which is based on Eclipse and is provided by
+ST). For my needs, I just had to install <code>binutils-arm-none-eabi</code> and
+<code>gcc-arm-none-eabi</code> on Ubuntu and I was well on my way to write some
+code.
+</p>
+
+<p>
+Now, since I wanted to write pure assembly with no help from any
+compiler or library, I needed a linker script, which tells the linker
+where each section of the program goes in memory. I searched the web
+but couldn't find anyone who had <b>exactly</b> what I needed: examples
+were either for the right chip but other toolchains (there's an
+YouTube video of someone doing this with the STM32CubeMX IDE, which
+doesn't seem to use GNU's ld?), or they were using the GNU toolchain
+but for different STM32 chips. So I ended up mixing and matching (and
+confirming things in the STM32F10x user manual) and ended up with
+this:
+</p>
+
+<div class="multiline-code-header">stm32f103.ld</div>
+<div class="multiline-code-wrapper">
+<div class="multiline-code">
+<pre>/* linker script for stm32f103.ld */
+
+ENTRY(start);
+
+MEMORY {
+ RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 20K
+ FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 64K
+}
+
+SECTIONS
+{
+  .text :
+  {
+    . = ALIGN(4);
+    *(.isr_vector)  /* <-- this has to be at the very start of flash */
+    *(.text)
+    *(.text*)
+    *(.rodata)
+    *(.rodata*)
+    . = ALIGN(4);
+  } > FLASH
+
+  __data_flash = .;
+
+  .data : AT ( __data_flash )
+  {
+    . = ALIGN(4);
+    __data_start = .;
+    *(.data)
+    *(.data*)
+    . = ALIGN(4);
+    __data_end = .;
+  } > RAM
+
+  .bss :
+  {
+    __bss_start = .;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+    . = ALIGN(4);
+    __bss_end = .;
+  } > RAM
+
+  __stack_size = 1024;
+  __stack_end = ORIGIN(RAM)+LENGTH(RAM);
+  __stack_start = __stack_end - __stack_size;
+  . = __stack_start;
+  .stack :
+  {
+    . = . + __stack_size;
+  } > RAM
+
+}
+</pre>
+</div>
+</div>
+
+<p>
+It has a lot of stuff I don't need (a lot of these sections are used
+by gcc), but I kept them anyway since they don't hurt and I might want
+to use them in the future.
+</p>
+
+<p>
+The assembly code needed to set up and control a GPIO pin is pretty
+simple, the only thing that stumped me for a bit was not knowing that
+the flash memory needs to have an interrupt vector at the very start.
+I ended up putting it in its own section, <code>.isr_vector</code>, to make easy
+for the linker script to place it exactly at the flash beginning.  The
+first entry of the vector is not an interrupt handler, but the address
+of the top of the stack region (the stack grows down), and the second
+one is the address of the start of the code.  Apparently it really
+wants some extra entries there for other handlers; the CPU locks up if
+they're not present (even though I made the handlers themselves into
+an infinite loop). I'm not entirely sure what's going on there, but
+adding 6 handlers after the start address seems to keep the CPU happy.
+</p>
+
+<p>
+Anyway, here's the assembly code. In the STM32, everything is
+controlled via registers mapped in memory. The code first enables the
+clock for the pins on port C (all peripheral clocks start disabled to
+save power), then configures pin 13 of port C as output, then sets the
+pin state, and then loops forever.
+</p>
+
+<div class="multiline-code-header">main.s</div>
+<div class="multiline-code-wrapper">
+<div class="multiline-code">
+<pre>        .cpu cortex-m3
+        .syntax unified
+        .thumb
+
+        @ ======================================
+        @ isr_vector
+        @ ======================================
+        .section .isr_vector
+        .word __stack_end
+        .word start
+        .word halt      @ NMI handler
+        .word halt      @ hard fault
+        .word halt      @ memory fault
+        .word halt      @ bus fault
+        .word halt      @ usage fault
+
+        .text
+
+        @ ======================================
+        @ start
+        @ ======================================
+        .global start
+        .thumb_func
+start:
+
+        @ enable clock for port C pins
+        ldr r0, =0x10             @ bit 4 = port C enable
+        ldr r1, =0x40021000       @ RCC base address
+        str r0, [r1, #0x18]       @ 0x18 = reg for APB2 enable (where port C lives)
+
+        @ configure port C pin 13 as output
+        ldr r0, =0x44244444       @ set pin 13 as output, other 7 pins stay as input
+        ldr r1, =0x40011000       @ port C base address
+        str r0, [r1, #0x04]       @ 0x04 = reg for config of 8 higher pins of port
+
+        @ set port C pin 13 to high (commented) or low
+        @ldr r0, =0x2000          @ pin 13 high (0x2000 = 1<<13)
+        ldr r0, =0                @ pin 13 low
+        str r0, [r1, #0x0c]       @ 0x0c = reg for output data of port pins
+
+start_loop:
+        b start_loop
+
+start_end:
+        .pool
+
+        @ ======================================
+        @ halt
+        @ ======================================
+        .thumb_func
+halt:
+        b halt
+
+        @ ======================================
+        @ DATA section
+        @ (not used, added here just to check that
+        @ the linker script is working)
+        @ ======================================
+        .section .data
+        .ascii "Hello, world!\0"
+        
+</pre>
+</div>
+</div>
+
+<p>
+The board has an LED connected to pin 13 of port C; it seems that the
+LED's cathode is connected to the pin (with the anode connected to
++Vdd) because the LED turns on when the pin is brought low.
+</p>
+
+<p>
+This code works, but if I ever want to use the stuff in the <code>.data</code>
+section, I'll have to copy it from the flash memory to RAM.  The
+linker script is prepared for that: it defines the symbol
+<code>__data_flash</code> to the address of the very end of the <code>.text</code> section,
+which is the start of where the <code>.data</code> section stuff is located in
+the flash memory.  So I'll just have to make a <code>memcpy</code> function that
+copies <code>__data_end-__data_start</code> bytes from <code>__data_flash</code> to
+<code>__data_start</code> (which is the address of the <code>.data</code> section in RAM).
+</p>
+
+<p>
+After assembling the code with <code>arm-none-eabi-as</code> and linking it with
+<code>arm-none-eabi-ld</code>, I used <code>arm-none-eabi-objcopy</code> to convert the ELF
+executable to a stripped out binary suitable to write to flash. These
+are the commands that <code>make</code> runs:
+</p>
+
+<div class="multiline-code-wrapper">
+<div class="multiline-code">
+<pre>arm-none-eabi-as -o main.o main.s
+arm-none-eabi-ld -Tstm32f103.ld -o main.elf main.o
+arm-none-eabi-objcopy -O binary main.elf main.bin
+</pre>
+</div>
+</div>
+
+<p>
+And, finally, to upload the final binary to the flash in the chip I
+ended up using the Windows STLink command line utility that the
+Arduino IDE installs when you install the STM32 boards. I think it's
+the same tool that can be downloaded from the STM32 website (which
+comes with a GUI besides the command line tool), but I haven't
+checked.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/stm32">#stm32</a>
+    <a href="/tags/arm">#arm</a>
+    <a href="/tags/assembly">#assembly</a>
+  </div>
+</div>
+
+<div class="footer">
+    <div class="page-links">
+      <div class="nav-link nav-link-prev">
+        <a href="/page4.html">&#x2190; Previous</a>
+      </div>
+
+      <div class="nav-link nav-link-page-num">Page 5/5</div>
+      
+      <div class="nav-link nav-link-next">
+      </div>
+
+    </div>
+
+  <div class="copyright">Copyright (C) 2021 MoeFH</div>
+
+</div>
+
+</div>
+
+<div class="content-right">
+  <div class="tag-list">
+    <div class="title">TAGS</div>
+    <div class="tags">
+      <div class="tag"><a href="/tags/arm">arm</a></div>
+      <div class="tag"><a href="/tags/assembly">assembly</a></div>
+      <div class="tag"><a href="/tags/esp-now">esp-now</a></div>
+      <div class="tag"><a href="/tags/esp32">esp32</a></div>
+      <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
+      <div class="tag"><a href="/tags/i2c">i2c</a></div>
+      <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/network">network</a></div>
+      <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
+      <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
+      <div class="tag"><a href="/tags/pico">pico</a></div>
+      <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
+      <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
+      <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/vga">vga</a></div>
+      <div class="tag"><a href="/tags/wii">wii</a></div>
+      <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
+    </div>
+  </div>
+
+  <div class="month-list">
+    <div class="title">ARCHIVES</div>
+    <div class="months">
+      <div class="month"><a href="/archives/2021/06">June 2021</a></div>
+      <div class="month"><a href="/archives/2021/05">May 2021</a></div>
+      <div class="month"><a href="/archives/2021/04">April 2021</a></div>
+      <div class="month"><a href="/archives/2021/03">March 2021</a></div>
+      <div class="month"><a href="/archives/2021/02">Ferbuary 2021</a></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+</body>
+</html>
+
