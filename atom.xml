@@ -2,18 +2,18 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>moefh.github.io</title>
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
-  <link href="http://raspberrypi:8081/atom.xml" rel="self"/>
-  <link href="http://raspberrypi:8081/"/>
+  <link href="https://moefh.github.io/atom.xml" rel="self"/>
+  <link href="https://moefh.github.io/"/>
   <updated>2021-06-13T20:19:43.000</updated>
-  <id>http://raspberrypi:8081/</id>
+  <id>https://moefh.github.io/</id>
   <author>
     <name>MoeFH</name>
   </author>
   <generator uri="https://moefh.github.io/">BloGen</generator>
   <entry>
     <title>New VGA Boards</title>
-    <link href="http://raspberrypi:8081/2021/06/13/New-VGA-Boards/"/>
-    <id>http://raspberrypi:8081/2021/06/13/New-VGA-Boards/</id>
+    <link href="https://moefh.github.io/2021/06/13/New-VGA-Boards/"/>
+    <id>https://moefh.github.io/2021/06/13/New-VGA-Boards/</id>
     <published>2021-06-13T20:19:43.000</published>
     <updated>2021-06-13T20:19:43.000</updated>
     <content type="html"><![CDATA[<p>
@@ -94,8 +94,8 @@ Nunchuk). I'll add these connections to the ESP32 board later.
   </entry>
   <entry>
     <title>Porting Loser Corps to the Raspberry Pi Pico</title>
-    <link href="http://raspberrypi:8081/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/"/>
-    <id>http://raspberrypi:8081/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/</id>
+    <link href="https://moefh.github.io/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/"/>
+    <id>https://moefh.github.io/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/</id>
     <published>2021-06-06T23:16:02.000</published>
     <updated>2021-06-06T23:16:02.000</updated>
     <content type="html"><![CDATA[<p>
@@ -212,8 +212,8 @@ and collision detection will be done soon.
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 7</title>
-    <link href="http://raspberrypi:8081/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/"/>
-    <id>http://raspberrypi:8081/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/</id>
+    <link href="https://moefh.github.io/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/"/>
+    <id>https://moefh.github.io/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/</id>
     <published>2021-05-23T19:49:31.000</published>
     <updated>2021-05-23T19:49:31.000</updated>
     <content type="html"><![CDATA[<p>
@@ -267,8 +267,8 @@ As usual, the source code is here:
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 6</title>
-    <link href="http://raspberrypi:8081/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/"/>
-    <id>http://raspberrypi:8081/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/</id>
+    <link href="https://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/"/>
+    <id>https://moefh.github.io/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6/</id>
     <published>2021-05-16T23:28:12.000</published>
     <updated>2021-05-16T23:28:12.000</updated>
     <content type="html"><![CDATA[<p>
@@ -353,8 +353,8 @@ some stuff to compile under ESP-IDF.
   </entry>
   <entry>
     <title>Using Wii I2C Controllers on the ESP32</title>
-    <link href="http://raspberrypi:8081/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/"/>
-    <id>http://raspberrypi:8081/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/</id>
+    <link href="https://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/"/>
+    <id>https://moefh.github.io/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/</id>
     <published>2021-05-15T12:38:48.000</published>
     <updated>2021-05-15T12:38:48.000</updated>
     <content type="html"><![CDATA[<p>
@@ -420,8 +420,8 @@ The source code for the library is here:
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 5</title>
-    <link href="http://raspberrypi:8081/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/"/>
-    <id>http://raspberrypi:8081/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/</id>
+    <link href="https://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/"/>
+    <id>https://moefh.github.io/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/</id>
     <published>2021-04-17T14:04:59.000</published>
     <updated>2021-04-17T14:04:59.000</updated>
     <content type="html"><![CDATA[<p>
@@ -462,8 +462,8 @@ every post).
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 4</title>
-    <link href="http://raspberrypi:8081/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/"/>
-    <id>http://raspberrypi:8081/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/</id>
+    <link href="https://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/"/>
+    <id>https://moefh.github.io/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/</id>
     <published>2021-04-04T00:10:58.000</published>
     <updated>2021-04-04T00:10:58.000</updated>
     <content type="html"><![CDATA[<p>
@@ -542,8 +542,8 @@ framebuffer in case I need it for another project in the future.
   </entry>
   <entry>
     <title>Homemade ESP32 VGA Boards</title>
-    <link href="http://raspberrypi:8081/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
-    <id>http://raspberrypi:8081/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
+    <link href="https://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
+    <id>https://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
     <published>2021-04-02T00:33:36.000</published>
     <updated>2021-04-02T00:33:36.000</updated>
     <content type="html"><![CDATA[<p>
@@ -637,8 +637,8 @@ I'm using in this project:
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 3</title>
-    <link href="http://raspberrypi:8081/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
-    <id>http://raspberrypi:8081/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
+    <link href="https://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
+    <id>https://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
     <published>2021-03-27T16:11:51.000</published>
     <updated>2021-03-27T16:11:51.000</updated>
     <content type="html"><![CDATA[<p>
@@ -859,8 +859,8 @@ of each one.
   </entry>
   <entry>
     <title>Porting Loser Corps to the ESP32 - Part 2</title>
-    <link href="http://raspberrypi:8081/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
-    <id>http://raspberrypi:8081/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
+    <link href="https://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
+    <id>https://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
     <published>2021-03-07T17:02:26.000</published>
     <updated>2021-03-07T17:02:26.000</updated>
     <content type="html"><![CDATA[<p>
