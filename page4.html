@@ -29,6 +29,234 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">Porting Loser Corps to the ESP32 - Part 3</a></div>
+  <div class="post-date">2021-03-27</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
+</p>
+
+<p>
+Even though there's nothing <b>really</b> exciting to report, this is a
+very long post because there's a lot of small changes:
+</p>
+
+<ul>
+  <li>Wiimote support</li>
+  <li>New VGA DACs</li>
+  <li>Rewriting the VGA output code</li>
+  <li>New font</li>
+</ul>
+
+<p class="header-2">Wiimote Support</p>
+
+<p>
+The game now supports the Wiimote controller (via Bluetooth) using
+takeru's <a href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
+to make a very small change to use it: I added a <code>void *</code> parameter to
+the callback function, so it can update the state of the controller
+object without forcing it to refer to the global binding.
+</p>
+
+<p>
+The library works perfectly, the only slightly annoying thing is that
+I haven't figured out how to permanently pair the controller with the
+ESP32, so every time the ESP32 restarts you have to press the Wiimote
+buttons 1 and 2 at the same time to make the Bluetooth connection. Not
+a big deal, but it could be better.
+</p>
+
+<p class="header-2">New VGA DACs</p>
+
+<p>
+I made a new VGA connector with new digital-to-analog converters
+(DACs). The old ones are slightly wonky because I didn't have
+resistors with good values when I made it, so I finally got some new
+resistors and made a new one:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs" title="New VGA connector with DACs">
+  <div class="image-caption">New VGA connector with DACs</div>
+</div>
+
+<p>
+For comparison, here's the old one:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs" title="Old VGA connector with DACs">
+  <div class="image-caption">Old VGA connector with DACs</div>
+</div>
+
+<p>
+To see why the new DACs are better than the old ones, we have to talk
+about how the VGA color signal is generated.  The monitor wants to
+receive each color component (Red, Green, Blue) in their own wire,
+with a voltage between 0V and 0.7V indicating its intensity.  To
+produce an image, the voltage has to be changed as the monitor sweeps
+the screen to draw the pixels: each pixel is drawn with the RGB
+intensity corresponding to the voltage of the red, green and blue
+wires at the time it's being drawn.
+</p>
+
+<p>
+The ESP32 only has 2 internal DAC outputs, so we can't use them to
+create the 3 voltages we need for the RGB wires (even if it had 3, its
+DACs aren't fast enough to generate the signal we need at over
+12MHz).  So we make the ESP32 output each color component as multiple
+digital pins: in our case, we use 2 pins per component. Since a
+digital pin has two logical values (0 and 1), each component has 4
+possible combinations (00, 01, 10, 11), and the DAC has to convert
+these to 4 voltages between 0V and 0.7V. Ideally, we'd like to map
+them like this:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left">pin values (from ESP32)</th><th align="left">intensity</th><th align="left">output voltage (to VGA monitor)</th></tr>
+<tr>
+<td align="left">00</td><td align="left">0%</td><td align="left">0V</td></tr>
+<tr>
+<td align="left">01</td><td align="left">33%</td><td align="left">0.23V</td></tr>
+<tr>
+<td align="left">10</td><td align="left">67%</td><td align="left">0.47V</td></tr>
+<tr>
+<td align="left">11</td><td align="left">100%</td><td align="left">0.7V</td></tr>
+</table></div></div>
+
+
+<p>
+The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
+(logical 0), so we can build a small circuit connecting them to
+resistors to generate the desired output voltages:
+</p>
+
+<div class="image">
+  <img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)" title="DAC schematic (for each color component)">
+  <div class="image-caption">DAC schematic (for each color component)</div>
+</div>
+
+<p>
+That's the DAC. We just have to choose values for R1 and R2 so that
+when Pin1 and Pin2 are high/low we have the desired voltage in output
+as shown in the table above. (By the way, the 75Ω resistor is there
+for impedance matching with the monitor -- I don't think it's really
+right, but I don't know how to match the impedance properly).
+</p>
+
+<p>
+The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
+available at the time. The new DAC has 1KΩ and 470Ω, which outputs
+voltages closer to what we want:
+</p>
+
+<div class="image">
+  <img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)" title="DAC output voltages (dotted lines show theoretical best)">
+  <div class="image-caption">DAC output voltages (dotted lines show theoretical best)</div>
+</div>
+
+<p>
+The dotted lines show the theoretical best values for each pin value
+except for <code>00</code>, which has the trivial-to-generate voltage level of
+0V.  The new DAC is overall closer to the theoretical best, but most
+importantly, it has more consistent spacing between the levels, while
+the old DAC has the interval between 01 and 10 smaller then the other
+ones.
+</p>
+
+<p>
+I'm not sure the image result is that different, but for the record
+here's a photo of the game running with the new DACs:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs" title="Game screen with the new DACs">
+  <div class="image-caption">Game screen with the new DACs</div>
+</div>
+
+<p class="header-2">Rewriting the VGA Output Code</p>
+
+<p>
+I ended up rewriting the VGA output code. I was using bitluni's
+excellent <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
+library does a lot of stuff we don't need. That makes the code larger
+and also more complicated: when reading the code, I had trouble
+following exactly how things are done with the code written in C++
+with multiple inheritance.
+</p>
+
+<p>
+So to make sure I understood every detail, I ended up rewriting the
+code in plain C style. My code supports only double-buffered output,
+and changing the resolution requires altering the appropriate
+constants by hand (I might make it easier to change it if I end up
+using this code for something else).  It also doesn't have any drawing
+API, all drawing must be done by writing directly to the framebuffer
+-- which suits the game just fine, because I was already doing that
+with ESP32Lib.
+</p>
+
+<p>
+My only improvement over ESP32Lib was making the I2S system trigger an
+interrupt at the end of each frame (the interrupy simply increments a
+frame counter). With that, the main game loop can now wait for the end
+of the frame to swap the framebuffers and start drawing again
+(basically a vsync). That removes the annoying horizontal line from
+the screen which happens when the image is updated while it's being
+drawn, and also forces a constant framerate (that's why that photo
+above shows 60fps).
+</p>
+
+<p>
+It's still possible to disable the vsync (returning to the old
+variable framerate and annoying horizontal line), which I do
+occasionally to check the performance of the game.
+</p>
+
+<p class="header-2">New Font</p>
+
+<p>
+Since I'm not using ESP32Lib anymore, I had to make my own font and
+font-rendering code (which is pretty unoptimized, but for now it
+doesn't matter since I'm only using text for debugging).  I used
+<a href="https://krita.org/en/">Krita</a> to draw the font because it's easier to
+draw pixel-by-pixel with it than with Gimp.
+</p>
+
+<p>
+Here's an image of the 6x8 font:
+</p>
+
+<div class="image">
+  <img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font" title="The new font">
+  <div class="image-caption">The new font</div>
+</div>
+
+<p>
+(The yellow/greenish background is what I used when drawing the font.)
+</p>
+
+<p class="header-2">Next Steps</p>
+
+<p>
+I'm not sure what I'll do next: probably either sound or network. For
+network, I haven't even decided if I'll use ESP32's "ESP-NOW" protocol
+or normal WiFi/IP, but it will be fun to investigate the pros and cons
+of each one.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/wiimote">#wiimote</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">Porting Loser Corps to the ESP32 - Part 2</a></div>
   <div class="post-date">2021-03-07</div>
   <div class="post-content">
@@ -204,101 +432,6 @@ All in all, I'm very pleased with the progress.
     <a href="/tags/vga">#vga</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/02/21/ESP32-VGA-output">ESP32 VGA output</a></div>
-  <div class="post-date">2021-02-21</div>
-  <div class="post-content">
-<p>
-Some time ago I made a VGA connector with a simple DAC made of
-resistors to use with old FPGA board, but since the board has very
-little RAM I wasn't able to do anything <a href="https://github.com/moefh/fpga-vga-driver">too
-interesting</a> (the DAC shown
-there has only 1 bit per color channel, I later made an improved one
-with 2 bits per channel).  But as it turns out, some crazy people made
-the ESP32 output a VGA signal using I2S -- I just tested it and it
-seems to work perfectly!
-</p>
-
-<p>
-I used <a href="https://github.com/fdivitto/FabGL">FabGL</a> by Fabrizio Di
-Vittorio, but there's also
-<a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> by bitluni which I'll
-probably check out later.  Here's one of FabGL's examples in action
-(pay no attention to the smudges on the monitor, it's very old):
-</p>
-
-<div class="image">
-  <img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image3.jpg" alt="ESP32 outputting to an old CRT monitor" title="ESP32 outputting to an old CRT monitor">
-  <div class="image-caption">ESP32 outputting to an old CRT monitor</div>
-</div>
-
-<p>
-Here's a close-up of the ESP32 showing the connected pins.
-</p>
-
-<div class="image">
-  <img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image7.jpg" alt="Showing the connected pins" title="Showing the connected pins">
-  <div class="image-caption">Showing the connected pins</div>
-</div>
-
-<p>
-I'm using the default FabGL pinout, which is:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<th align="right">ESP32 pin</th><th align="left">Connection</th></tr>
-<tr>
-<td align="right">23</td><td align="left">H Sync</td></tr>
-<tr>
-<td align="right">15</td><td align="left">V Sync</td></tr>
-<tr>
-<td align="right">22</td><td align="left">Red (high bit)</td></tr>
-<tr>
-<td align="right">21</td><td align="left">Red (low bit)</td></tr>
-<tr>
-<td align="right">19</td><td align="left">Green (high bit)</td></tr>
-<tr>
-<td align="right">18</td><td align="left">Green (low bit)</td></tr>
-<tr>
-<td align="right">5</td><td align="left">Blue (high bit)</td></tr>
-<tr>
-<td align="right">4</td><td align="left">Blue (low bit)</td></tr>
-</table></div></div>
-
-
-<p>
-And finally, here's my hacky VGA connector/DAC with 2 bits per color
-channel giving a total of 64 colors:
-</p>
-
-<div class="image">
-  <img width="3264" height="2448" src="/2021/02/21/ESP32-VGA-output/image6.jpg" alt="My homemade VGA connector/DAC" title="My homemade VGA connector/DAC">
-  <div class="image-caption">My homemade VGA connector/DAC</div>
-</div>
-
-<p>
-The other side of the board is kind of a mess (this was one of my
-first soldering jobs), but it works well enough.  And, before you ask,
-all of the jumpers are inserted all the way in, but some have longer
-leads than others -- they're really crappy jumpers!
-</p>
-
-<p>
-I might try to port <a href="https://github.com/moefh/loser-corps">Loser
-Corps</a> to this thing. No idea
-how well it will work over Wifi, the network code is <b>very</b> simplistic
-and probably doesn't work well anywhere other than Ethernet. We'll
-see.
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/vga">#vga</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
@@ -331,6 +464,7 @@ see.
       <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
       <div class="tag"><a href="/tags/i2c">i2c</a></div>
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
@@ -338,6 +472,7 @@ see.
       <div class="tag"><a href="/tags/pico">pico</a></div>
       <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
       <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
+      <div class="tag"><a href="/tags/sound">sound</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
@@ -348,6 +483,7 @@ see.
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/07">July 2021</a></div>
       <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>
       <div class="month"><a href="/archives/2021/04">April 2021</a></div>

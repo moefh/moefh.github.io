@@ -4,12 +4,147 @@
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="https://moefh.github.io/atom.xml" rel="self"/>
   <link href="https://moefh.github.io/"/>
-  <updated>2021-06-13T20:19:43.000</updated>
+  <updated>2021-07-17T17:35:06.000</updated>
   <id>https://moefh.github.io/</id>
   <author>
     <name>MoeFH</name>
   </author>
   <generator uri="https://moefh.github.io/">BloGen</generator>
+  <entry>
+    <title>Sound Output with the Raspberry Pi Pico</title>
+    <link href="https://moefh.github.io/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/"/>
+    <id>https://moefh.github.io/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/</id>
+    <published>2021-07-17T17:35:06.000</published>
+    <updated>2021-07-17T17:35:06.000</updated>
+    <content type="html"><![CDATA[<p>
+I started playing with sound with the Raspberry Pi Pico.  I'm using
+using an LM386 amplifier and an old 8Ω speaker:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/breadboard.jpg" alt="Photo of the Pico, the LM386 amplifier and the speaker" title="Photo of the Pico, the LM386 amplifier and the speaker">
+  <div class="image-caption">Photo of the Pico, the LM386 amplifier and the speaker</div>
+</div>
+
+<p>
+For the sound generation code, I'm using the PWM/DMA method described
+in <a href="https://gregchadwick.co.uk/blog/playing-with-the-pico-pt3/">this blog
+post</a>.  It
+uses PWM sounds with 8-bit samples at 22050 Hz.  I wrote a simple
+mixer on top of that to play multiple sounds at the same time, and an
+easy-to-use API for starting sounds with the option to loop, since
+I'll add this to the Pico <a href="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico">Loser Corps port</a>.
+</p>
+
+<p>
+This is the schematic for the sound output:
+</p>
+
+<div class="image">
+  <img width="640" height="360" src="/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/amp-schematic.png" alt="Sound output schematic" title="Sound output schematic">
+  <div class="image-caption">Sound output schematic</div>
+</div>
+
+<p>
+I'm using a voltage divider with 2.2K/1K to bring the sound signal in
+the range 0-1V in with a 100nF capacitor in parallel to filter the
+unwanted high frequencies, connecting the result to the input of the
+LM386 using a potentiometer for volume control.  The rest of the
+schematic was taken from the "typical application" section of the
+LM386 datasheet.  Leaving its pins 1, 7 and 8 not connected results in
+a gain of 20, which is enough for my tests.
+</p>
+
+<p>
+I had to change some resistors and capacitors because I didn't have
+the recommended values available. The 75Ω connected to the <code>SOUND_PIN</code>
+was meant to be a 68Ω, and the 100nF capacitor on the LM386 output was
+meant to be 50nF.
+</p>
+
+<p>
+I also decided to use a 1000μF capacitor on the LM386 output instead
+of the 250μF recommended by the datasheet to try to improve the bass.
+I don't think it matters too much with that crappy speaker, but it
+doesn't hurt.
+</p>
+
+<p>
+The overall sound quality is not that great: the sample size is 8
+bits, and the whole thing is mounted on a breadbord. But it's usable
+for now, and probably good enough for the game sound effects.
+</p>
+
+<p>
+The code keeps playing a synth sound on loop, and queues a small drum
+sound when you press the button. For completeness, here's the
+schematic showing the Pico connections, including the button that
+triggers the drum sound:
+</p>
+
+<div class="image">
+  <img width="300" height="350" src="/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/pico-schematic.png" alt="Pico connections schematic" title="Pico connections schematic">
+  <div class="image-caption">Pico connections schematic</div>
+</div>
+
+<p>
+The code is set up to mix up to 4 sounds, so if you press the
+button too quickly it will start ignoring presses until there are less
+than 4 sound playing at the same time.
+</p>
+
+<p>
+The sound generation code is in <code>audio.c</code> and <code>audio.h</code>, this is the
+API:
+</p>
+
+<div class="multiline-code-wrapper">
+<div class="multiline-code">
+<pre>  // init
+  audio_init(SOUND_PIN);
+  
+  // play once (use the returned sound_id to control volume or stop)
+  int sound_id = audio_play_once(samples, num_samples);
+
+  // set audio volume (8.8 fixed point)
+  audio_source_set_volume(sound_id, 3<<8);
+
+  // play in loop (3rd argument says where to start the loop)
+  sound_id = audio_play_loop(samples, num_samples, 0);
+
+  // stop playing
+  audio_source_stop(sound_id);
+</pre>
+</div>
+</div>
+
+<p>
+The mixer must be manually called at least once every 45 milliseconds
+or so (this interval depends on the sound buffer size configured in
+<code>audio.h</code>; a larger buffer allows for more time between calls at the
+expense of more latency for starting sounds):
+</p>
+
+<div class="multiline-code-wrapper">
+<div class="multiline-code">
+<pre>  while (1) {
+    audio_mixer_step();
+
+    // ... other code ...
+
+    sleep_ms(30);
+  }
+  
+</pre>
+</div>
+</div>
+
+<p>
+As usual, the code is <a href="https://github.com/moefh/pico-audio-demo">on
+Github</a>.
+
+</p>]]></content>
+  </entry>
   <entry>
     <title>New VGA Boards</title>
     <link href="https://moefh.github.io/2021/06/13/New-VGA-Boards/"/>
@@ -854,83 +989,6 @@ I'm not sure what I'll do next: probably either sound or network. For
 network, I haven't even decided if I'll use ESP32's "ESP-NOW" protocol
 or normal WiFi/IP, but it will be fun to investigate the pros and cons
 of each one.
-
-</p>]]></content>
-  </entry>
-  <entry>
-    <title>Porting Loser Corps to the ESP32 - Part 2</title>
-    <link href="https://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/"/>
-    <id>https://moefh.github.io/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/</id>
-    <published>2021-03-07T17:02:26.000</published>
-    <updated>2021-03-07T17:02:26.000</updated>
-    <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-Here's a demo video (click to open Youtube):
-</p>
-
-<div>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><div class="image">
-  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video" title="Youtube video">
-  <div class="image-caption">Youtube video</div>
-</div></a>
-</div>
-
-<p>
-(This video shows a slightly older version where collision detection
-was done with the image rectangle, not the character's clipping
-rectangle, which is why it looks a little wonky in a few places.)
-</p>
-
-<p>
-As the video shows, you control a character in a map, walking and
-jumping around.  I reworked some parts of the movement code, but it
-feels a lot like the original, although I think the jump is not high
-enough.  The collision detection is pretty much untouched, except for
-what I absolutely had to do to make it run in the ESP32, which wasn't
-much.
-</p>
-
-<p>
-The joystick I'm using is a common Arduino joystick shield.  It's
-pretty cheap and easy to use, but it requires one input pin of the
-ESP32 for each button, and one analog input pin for each direction of
-the stick -- it's really just a bunch of of buttons and
-<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
-conveniently placed on a PCB:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I'm using" title="The Arduino joystick shield I'm using">
-  <div class="image-caption">The Arduino joystick shield I'm using</div>
-</div>
-
-<p>
-I've connected all buttons pins, but the code only uses the C button
-to jump and the X analog stick to move.
-</p>
-
-<p>
-I've tried to use a Wiimote nunchuck and a Wiimote classic controller,
-but I didn't have much success.  These controllers use an
-<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
-Wiimote, so it seems like they should be easy to use with the ESP32 --
-and it actually works, but it's very unreliable.  The controller stops
-replying for no apparent reason, a lot of times requiring an
-unplug/re-plug to start working again.  I've tried it with no pullup
-resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
-thing is that it works perfectly with an Arduino Uno (using the same
-exact test code), even with no pullup resistors.  I say people saying
-that the I2C part of the ESP32 Arduino library isn't that great, so
-maybe that's the problem?
-</p>
-
-<p>
-Another nice option would be to use the Wiimote itself, which uses
-Bluetooth.  That's probably the next thing I'll work on in this
-project.
 
 </p>]]></content>
   </entry>

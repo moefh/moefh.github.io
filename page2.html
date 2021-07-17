@@ -29,6 +29,66 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a></div>
+  <div class="post-date">2021-05-23</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
+</p>
+
+<p>
+The game now sends shots over the network, so players can see each
+other's shots:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7/screen.jpg" alt="Two players shooting" title="Two players shooting">
+  <div class="image-caption">Two players shooting</div>
+</div>
+
+<p>
+(Please excuse me for not showing the two systems and screens
+side-by-side, it's a pain to move everything around only to take a
+quick picture.)
+</p>
+
+<p>
+Another change: the game runs at 320x240 with WiFi enabled even when
+compiled under the Arduino IDE, since I found out how to decrease the
+number of WiFi buffers without recompiling the ESP-IDF WiFi component.
+It turns out that the number of rx/tx buffers used in WiFi is set in
+the struct returned by <code>WIFI_INIT_CONFIG_DEFAULT()</code>, which initializes
+the fields to values defined in the WiFi component configuration.
+Decreasing the values before passing the struct to <code>esp_wifi_init()</code>
+does the trick.
+</p>
+
+<p>
+To make it work in the Arduino IDE, I just had to stop using the
+Arduino <code>WiFi</code> object and use the ESP-IDF API directly.  One small
+snag I ran into was that the ESP-IDF version used by the Arduino Core
+is pretty old, and to initialize the network you had to call
+<code>tcpip_adapter_init()</code> instead of the current <code>esp_netif_init()</code>.
+Once I solved that, the network code compiles and runs with no
+problems.  There's just an annoying error that pops out in the serial
+complaining that I haven't created an event loop, which I think is
+required for the Arduino Core <code>WiFi</code> object to receive WiFi events.
+The game seems to run fine without it, though.
+</p>
+
+<p>
+As usual, the source code is here:
+<a href="https://github.com/moefh/esp32-loser">https://github.com/moefh/esp32-loser</a>
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/network">#network</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/05/16/Porting-Loser-Corps-to-the-ESP32-Part-6">Porting Loser Corps to the ESP32 - Part 6</a></div>
   <div class="post-date">2021-05-16</div>
   <div class="post-content">
@@ -193,53 +253,6 @@ The source code for the library is here:
     <a href="/tags/nunchuk">#nunchuk</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5">Porting Loser Corps to the ESP32 - Part 5</a></div>
-  <div class="post-date">2021-04-17</div>
-  <div class="post-content">
-<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-This is just a quick update: I have added shooting to the game.  You
-shoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).
-There can be at most 14 shots active at once, and they do nothing but
-fly in a straight line until they hit a wall or the edge of the map.
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)" title="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)">
-  <div class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)</div>
-</div>
-
-<p>
-I also ported the game to use the ESP-IDF framework (as opposed to the
-Arduino framework, which originally used).  I'm trying to see if I can
-decrease the memory used by the WiFi system so the game can use full
-320x240 resolution while in networked mode, and the EDP-IDF framework
-has lots of configuration options.  I haven't made much progress with
-it yet: I was just recently able to make the game run at full speed,
-after finding that I have to set not ony the processor clock to 240MHz
-but also the flash SPI clock to 80MHz (apparently the flash speed is a
-bottleneck, which is not surprising since we copy images directly from
-flash to the framebuffer).
-</p>
-
-<p>
-As usual, the source is on
-<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven't
-written this before, so from now on I'll start adding this link to
-every post).
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
@@ -272,6 +285,7 @@ every post).
       <div class="tag"><a href="/tags/esp32-loser">esp32-loser</a></div>
       <div class="tag"><a href="/tags/i2c">i2c</a></div>
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
+      <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
@@ -279,6 +293,7 @@ every post).
       <div class="tag"><a href="/tags/pico">pico</a></div>
       <div class="tag"><a href="/tags/pico-loser">pico-loser</a></div>
       <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
+      <div class="tag"><a href="/tags/sound">sound</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
@@ -289,6 +304,7 @@ every post).
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/07">July 2021</a></div>
       <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>
       <div class="month"><a href="/archives/2021/04">April 2021</a></div>
