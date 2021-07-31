@@ -4,12 +4,133 @@
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="https://moefh.github.io/atom.xml" rel="self"/>
   <link href="https://moefh.github.io/"/>
-  <updated>2021-07-17T17:35:06.000</updated>
+  <updated>2021-07-31T14:45:14.000</updated>
   <id>https://moefh.github.io/</id>
   <author>
     <name>MoeFH</name>
   </author>
   <generator uri="https://moefh.github.io/">BloGen</generator>
+  <entry>
+    <title>Porting Loser Corps to the Raspberry Pi Pico - Part 2</title>
+    <link href="https://moefh.github.io/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2/"/>
+    <id>https://moefh.github.io/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2/</id>
+    <published>2021-07-31T14:45:14.000</published>
+    <updated>2021-07-31T14:45:14.000</updated>
+    <content type="html"><![CDATA[<p>
+I finished bringing the Loser Corps port on the Pico to be on par with
+the ESP32, and then added sound output supporting 4 sounds plus music
+at the same time, with music coming from a MOD player I wrote from
+scratch for the Pico.
+</p>
+
+<p class="header-1">Hardware</p>
+
+<p>
+First, let's look at the hardware side. This is my homemade sound
+amplifier board:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2/amplifier.jpg" alt="Homemade amplifier using an  LM386" title="Homemade amplifier using an  LM386">
+  <div class="image-caption">Homemade amplifier using an  LM386</div>
+</div>
+
+<p>
+The input is at the 3-pin female header at the top (VCC, GND and
+input) and the output is at the 2-pin male header on the left (GND and
+output).  This board is very similar to what I had in the last post in
+the breadboard, I just changed some capacitor values and moved the
+potentiometer for the volume control to go between the input coupling
+capacitor and the LM386. Here is the updated schematic:
+</p>
+
+<div class="image">
+  <img width="640" height="340" src="/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2/amp-schematic.png" alt="Homemade amplifier using an `LM386`" title="Homemade amplifier using an `LM386`">
+  <div class="image-caption">Homemade amplifier using an `LM386`</div>
+</div>
+
+<p>
+One thing I didn't mention in the last post is that I tried using
+generic potentiometers for the volume control, but the metal casing
+adds a lot of noise (this might be a common thing, or it might be just
+because I live pretty close to some radio antennas). I ended up buying
+the sound table potentiometers you see in the photos, they're more
+expensive but work pretty well.
+</p>
+
+<p class="header-1">Code</p>
+
+<p>
+Now, the software side.  The game can play music and up to 4 other
+sounds at the same time, but this limit is completely arbitrary and
+can easily be changed in the source code.
+</p>
+
+<p>
+The music is played with a simple MOD player I wrote from scratch for
+the Pico.  The player supports only 4 channels (easily changed in a
+<code>#define</code>) and is currently missing a lot of MOD effects like tremolo
+and vibrato, but it's good enough to play "Axel F" pretty close to
+VLC, so I'm happy with it. I also tested it with the MOD files from
+Flashback (the game from 1992) and a few other MODs from
+<a href="https://modarchive.org/">modarchive.org</a>, and it sounds passable.
+</p>
+
+<p>
+The player modulates notes by streching or compressing the input
+samples to the required sample rate, always choosing the nearest input
+sample (think scaling an image using the "nearest" algorithm).  It
+causes aliasing (which can be heard as noise) but it's very fast -- I
+use a fixed point number (<code>20.12</code>) to store the index of the current
+sample, and add <code>fi/fo</code> to it after playing each sample, where <code>fi</code> is
+the sample rate of the note and <code>fo</code> is the sample rate of the output
+sound (22050Hz).  So if the MOD requests a sample to be played at
+22050Hz, <code>fi/fo</code> would be <code>1</code> and the sample would be played without
+any modulation (i.e., each input sample would be sent exactly once to
+the output); if the frequency requested is 11025Hz (half), then
+<code>fi/fo</code> would be <code>0.5</code> and each input sample would be sent twice since
+it would take two additions to the sample index to advance to the next
+sample.
+</p>
+
+<p>
+Of course things are a little more complicated than that, because MOD
+files store the sample frequency as periods of the original Amiga
+clock (7.09379 MHz), so there's some annoying math involved (the
+annoying part is in making sure we get a reasonable precision while
+avoiding overflow).  To get the gory details, see the file
+<code>game/lib/mod_player.c</code> on Github.
+</p>
+
+<p>
+I might improve the MOD player in the future, but I'm pretty happy
+with it for now.
+</p>
+
+<p>
+Other than the MOD player, I added some sound effects. There's a small
+"bump" sound then the player character hits the ground (I recorded it
+by gently tapping the microphone some 20 years ago when I wrote the
+game on PC) and a generic explosion sound when a shot hits something
+(taken from a free sound library from 20 years ago).
+</p>
+
+<p>
+And finally, not related to sound at all, a small improvement: I added
+some tile caching for screen drawing to improve the speed and make
+sure we never drop under 60 frames per second.  Some parts of the map
+use too many different tiles, which results in slow down because we
+can't stream data from the flash fast enough to draw the entire screen
+in 16 miliseconds. So I made it store some of the most-used tiles in
+RAM, and that fixes the problem.
+</p>
+
+<p>
+As usual, the code is on
+<a href="https://github.com/moefh/pico-loser">Github</a>.
+
+</p>]]></content>
+  </entry>
   <entry>
     <title>Sound Output with the Raspberry Pi Pico</title>
     <link href="https://moefh.github.io/2021/07/17/Sound-Output-with-the-Raspberry-Pi-Pico/"/>
@@ -769,228 +890,6 @@ I'm using in this project:
 </div>
 
 </div>]]></content>
-  </entry>
-  <entry>
-    <title>Porting Loser Corps to the ESP32 - Part 3</title>
-    <link href="https://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/"/>
-    <id>https://moefh.github.io/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/</id>
-    <published>2021-03-27T16:11:51.000</published>
-    <updated>2021-03-27T16:11:51.000</updated>
-    <content type="html"><![CDATA[<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-Even though there's nothing <b>really</b> exciting to report, this is a
-very long post because there's a lot of small changes:
-</p>
-
-<ul>
-  <li>Wiimote support</li>
-  <li>New VGA DACs</li>
-  <li>Rewriting the VGA output code</li>
-  <li>New font</li>
-</ul>
-
-<p class="header-2">Wiimote Support</p>
-
-<p>
-The game now supports the Wiimote controller (via Bluetooth) using
-takeru's <a href="https://github.com/takeru/Wiimote">Wiimote</a> library. I had
-to make a very small change to use it: I added a <code>void *</code> parameter to
-the callback function, so it can update the state of the controller
-object without forcing it to refer to the global binding.
-</p>
-
-<p>
-The library works perfectly, the only slightly annoying thing is that
-I haven't figured out how to permanently pair the controller with the
-ESP32, so every time the ESP32 restarts you have to press the Wiimote
-buttons 1 and 2 at the same time to make the Bluetooth connection. Not
-a big deal, but it could be better.
-</p>
-
-<p class="header-2">New VGA DACs</p>
-
-<p>
-I made a new VGA connector with new digital-to-analog converters
-(DACs). The old ones are slightly wonky because I didn't have
-resistors with good values when I made it, so I finally got some new
-resistors and made a new one:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/new-dac.jpg" alt="New VGA connector with DACs" title="New VGA connector with DACs">
-  <div class="image-caption">New VGA connector with DACs</div>
-</div>
-
-<p>
-For comparison, here's the old one:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/old-dac.jpg" alt="Old VGA connector with DACs" title="Old VGA connector with DACs">
-  <div class="image-caption">Old VGA connector with DACs</div>
-</div>
-
-<p>
-To see why the new DACs are better than the old ones, we have to talk
-about how the VGA color signal is generated.  The monitor wants to
-receive each color component (Red, Green, Blue) in their own wire,
-with a voltage between 0V and 0.7V indicating its intensity.  To
-produce an image, the voltage has to be changed as the monitor sweeps
-the screen to draw the pixels: each pixel is drawn with the RGB
-intensity corresponding to the voltage of the red, green and blue
-wires at the time it's being drawn.
-</p>
-
-<p>
-The ESP32 only has 2 internal DAC outputs, so we can't use them to
-create the 3 voltages we need for the RGB wires (even if it had 3, its
-DACs aren't fast enough to generate the signal we need at over
-12MHz).  So we make the ESP32 output each color component as multiple
-digital pins: in our case, we use 2 pins per component. Since a
-digital pin has two logical values (0 and 1), each component has 4
-possible combinations (00, 01, 10, 11), and the DAC has to convert
-these to 4 voltages between 0V and 0.7V. Ideally, we'd like to map
-them like this:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<th align="left">pin values (from ESP32)</th><th align="left">intensity</th><th align="left">output voltage (to VGA monitor)</th></tr>
-<tr>
-<td align="left">00</td><td align="left">0%</td><td align="left">0V</td></tr>
-<tr>
-<td align="left">01</td><td align="left">33%</td><td align="left">0.23V</td></tr>
-<tr>
-<td align="left">10</td><td align="left">67%</td><td align="left">0.47V</td></tr>
-<tr>
-<td align="left">11</td><td align="left">100%</td><td align="left">0.7V</td></tr>
-</table></div></div>
-
-
-<p>
-The ESP32 output pins give 3.3V when high (logical 1) and 0V when low
-(logical 0), so we can build a small circuit connecting them to
-resistors to generate the desired output voltages:
-</p>
-
-<div class="image">
-  <img width="400" height="360" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-schematic.png" alt="DAC schematic (for each color component)" title="DAC schematic (for each color component)">
-  <div class="image-caption">DAC schematic (for each color component)</div>
-</div>
-
-<p>
-That's the DAC. We just have to choose values for R1 and R2 so that
-when Pin1 and Pin2 are high/low we have the desired voltage in output
-as shown in the table above. (By the way, the 75Ω resistor is there
-for impedance matching with the monitor -- I don't think it's really
-right, but I don't know how to match the impedance properly).
-</p>
-
-<p>
-The old DAC had resistor values of 1KΩ and 560Ω, which is what I had
-available at the time. The new DAC has 1KΩ and 470Ω, which outputs
-voltages closer to what we want:
-</p>
-
-<div class="image">
-  <img width="401" height="330" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/dac-graph.png" alt="DAC output voltages (dotted lines show theoretical best)" title="DAC output voltages (dotted lines show theoretical best)">
-  <div class="image-caption">DAC output voltages (dotted lines show theoretical best)</div>
-</div>
-
-<p>
-The dotted lines show the theoretical best values for each pin value
-except for <code>00</code>, which has the trivial-to-generate voltage level of
-0V.  The new DAC is overall closer to the theoretical best, but most
-importantly, it has more consistent spacing between the levels, while
-the old DAC has the interval between 01 and 10 smaller then the other
-ones.
-</p>
-
-<p>
-I'm not sure the image result is that different, but for the record
-here's a photo of the game running with the new DACs:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/screen.jpg" alt="Game screen with the new DACs" title="Game screen with the new DACs">
-  <div class="image-caption">Game screen with the new DACs</div>
-</div>
-
-<p class="header-2">Rewriting the VGA Output Code</p>
-
-<p>
-I ended up rewriting the VGA output code. I was using bitluni's
-excellent <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a>, but that
-library does a lot of stuff we don't need. That makes the code larger
-and also more complicated: when reading the code, I had trouble
-following exactly how things are done with the code written in C++
-with multiple inheritance.
-</p>
-
-<p>
-So to make sure I understood every detail, I ended up rewriting the
-code in plain C style. My code supports only double-buffered output,
-and changing the resolution requires altering the appropriate
-constants by hand (I might make it easier to change it if I end up
-using this code for something else).  It also doesn't have any drawing
-API, all drawing must be done by writing directly to the framebuffer
--- which suits the game just fine, because I was already doing that
-with ESP32Lib.
-</p>
-
-<p>
-My only improvement over ESP32Lib was making the I2S system trigger an
-interrupt at the end of each frame (the interrupy simply increments a
-frame counter). With that, the main game loop can now wait for the end
-of the frame to swap the framebuffers and start drawing again
-(basically a vsync). That removes the annoying horizontal line from
-the screen which happens when the image is updated while it's being
-drawn, and also forces a constant framerate (that's why that photo
-above shows 60fps).
-</p>
-
-<p>
-It's still possible to disable the vsync (returning to the old
-variable framerate and annoying horizontal line), which I do
-occasionally to check the performance of the game.
-</p>
-
-<p class="header-2">New Font</p>
-
-<p>
-Since I'm not using ESP32Lib anymore, I had to make my own font and
-font-rendering code (which is pretty unoptimized, but for now it
-doesn't matter since I'm only using text for debugging).  I used
-<a href="https://krita.org/en/">Krita</a> to draw the font because it's easier to
-draw pixel-by-pixel with it than with Gimp.
-</p>
-
-<p>
-Here's an image of the 6x8 font:
-</p>
-
-<div class="image">
-  <img width="640" height="320" src="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3/font.png" alt="The new font" title="The new font">
-  <div class="image-caption">The new font</div>
-</div>
-
-<p>
-(The yellow/greenish background is what I used when drawing the font.)
-</p>
-
-<p class="header-2">Next Steps</p>
-
-<p>
-I'm not sure what I'll do next: probably either sound or network. For
-network, I haven't even decided if I'll use ESP32's "ESP-NOW" protocol
-or normal WiFi/IP, but it will be fun to investigate the pros and cons
-of each one.
-
-</p>]]></content>
   </entry>
 </feed>
 

@@ -29,6 +29,105 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a></div>
+  <div class="post-date">2021-04-02</div>
+  <div class="post-content">
+<p>
+To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
+a new board for the ESP32 so I can have two of them running the game
+and talking to each other.  The new board was supposed to be just a
+copy of the original one, but I discovered a silly mistake I made in
+the original wiring: the red-high and red-low wires were reversed.
+This caused quite a mess in the colors, I'm surprised I didn't notice
+it before:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels" title="Comparison showing that the old board has wrong red levels">
+  <div class="image-caption">Comparison showing that the old board has wrong red levels</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the "P"" title="Zoom in the "P"">
+  <div class="image-caption">Zoom in the "P"</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch" title="Bridge and torch">
+  <div class="image-caption">Bridge and torch</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch" title="Zoom in the torch">
+  <div class="image-caption">Zoom in the torch</div>
+</div>
+
+<p>
+The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
+not sure I can see any difference between the old an new DACs, to be
+honest (my phone camera doesn't help -- its automatic color balance
+messes up the colors way more than my DACs, apparently).
+</p>
+
+<p>
+In any case, it's easy to see the difference between the old and new
+boards. Not only the new board's images have a blue-greenish tint
+overall (less red), we can also see that the red gradient in the "P"
+is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
+red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
+red</code>-><code>bright red</code>, which is happens when the low and high bits of the
+red component are swapped:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
+<tr>
+<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
+<tr>
+<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
+</table></div></div>
+
+
+<p>
+Of course, since we can select the ESP32 output pins any way we want,
+it's easy to fix this in software by simply changing the pin
+assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
+<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
+don't feel like making a third board right now.
+</p>
+
+<p>
+And finally, just for reference, here are all of the homemade boards
+I'm using in this project:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board" title="New board">
+  <div class="image-caption">New board</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don't cross, unlike the blue and green ones)" title="Old board (notice that the red wires don't cross, unlike the blue and green ones)">
+  <div class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</div>
+</div>
+
+<div>
+<div class="image">
+  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs" title="DACs">
+  <div class="image-caption">DACs</div>
+</div>
+
+</div>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/perfboard">#perfboard</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">Porting Loser Corps to the ESP32 - Part 3</a></div>
   <div class="post-date">2021-03-27</div>
   <div class="post-content">
@@ -339,99 +438,6 @@ project.
     <a href="/tags/joystick">#joystick</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32">Porting Loser Corps to the ESP32</a></div>
-  <div class="post-date">2021-02-28</div>
-  <div class="post-content">
-<p>
-<i>(See <a href="/tags/esp32-loser">all posts about the port</a>)</i>
-</p>
-
-<p>
-I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
-a video game I and a few friends made in the old days of 1998-1999, to
-the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
-</p>
-
-<p>
-I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
-generate the VGA output, and I'm still using my crappy homemade DAC
-with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
-board I made to connect the pins from the ESP32 devkit to the VGA
-breakout board without the mess I had in the breadboard, and an
-improvised cardboard box to hold the VGA plug in place (it works
-surprisingly well).  I'll probably make a nicer board and box when I
-add joystick input and sound output.
-</p>
-
-<p>
-The code currently renders a static screen with the background filled
-with tiles, some sprites and some foreground tiles. It's probably a
-reasonable test of how fast things will render:
-</p>
-
-<div class="image">
-  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup" title="The whole setup">
-  <div class="image-caption">The whole setup</div>
-</div>
-
-<p>
-The game images look a little rough when converted to 64 colors,
-especially since the palette is fixed by the hardware, but I think I
-can get used to it:
-</p>
-
-<div class="image">
-  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game" title="Screenshot of the game">
-  <div class="image-caption">Screenshot of the game</div>
-</div>
-
-<p>
-I managed to get a descent render speed after I started writing to the
-screen 4 pixels at a time. The annoying thing about this whole thing
-is that because of the way the ESP32 I2S DMA works, the data in the
-framebuffer has to be set in a weird order:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
-<tr>
-<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
-</table></div></div>
-
-
-<p>
-Another annoying thing is that the VSync and HSync bits for the VGA
-signal have to go inside every pixel in the framebuffer. To make
-things fast, I pre-baked these bits in the image data, which means
-that if I want to change to a VGA mode that happens to have different
-VSync or HSync polarity, I'll have to re-convert the images and
-recompile everything. Not a big deal, but it's annoying.
-</p>
-
-<p>
-Currently my code only supports placing images aligned horizontally to
-4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
-the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
-every frame (since I'm going to overwrite everything anyway), I
-managed to get around 150 frames per second. We'll have to see how bad
-it gets once I remove the restriction on the horizontal alignment.
-</p>
-
-<p>
-All in all, I'm very pleased with the progress.
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
@@ -466,6 +472,7 @@ All in all, I'm very pleased with the progress.
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/mod">mod</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
       <div class="tag"><a href="/tags/perfboard">perfboard</a></div>

@@ -29,6 +29,99 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/02/28/Porting-Loser-Corps-to-the-ESP32">Porting Loser Corps to the ESP32</a></div>
+  <div class="post-date">2021-02-28</div>
+  <div class="post-content">
+<p>
+<i>(See <a href="/tags/esp32-loser">all posts about the port</a>)</i>
+</p>
+
+<p>
+I started porting <a href="https://github.com/moefh/loser-corps">Loser Corps</a>,
+a video game I and a few friends made in the old days of 1998-1999, to
+the <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a>.
+</p>
+
+<p>
+I'm using bitluni's <a href="https://github.com/bitluni/ESP32Lib">ESP32Lib</a> to
+generate the VGA output, and I'm still using my crappy homemade DAC
+with 2 bits per color component I showed in the <a href="/2021/02/21/ESP32-VGA-output">last post</a>.  The only new addition is a little
+board I made to connect the pins from the ESP32 devkit to the VGA
+breakout board without the mess I had in the breadboard, and an
+improvised cardboard box to hold the VGA plug in place (it works
+surprisingly well).  I'll probably make a nicer board and box when I
+add joystick input and sound output.
+</p>
+
+<p>
+The code currently renders a static screen with the background filled
+with tiles, some sprites and some foreground tiles. It's probably a
+reasonable test of how fast things will render:
+</p>
+
+<div class="image">
+  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/setup.jpg" alt="The whole setup" title="The whole setup">
+  <div class="image-caption">The whole setup</div>
+</div>
+
+<p>
+The game images look a little rough when converted to 64 colors,
+especially since the palette is fixed by the hardware, but I think I
+can get used to it:
+</p>
+
+<div class="image">
+  <img width="1632" height="1224" src="/2021/02/28/Porting-Loser-Corps-to-the-ESP32/screenshot.jpg" alt="Screenshot of the game" title="Screenshot of the game">
+  <div class="image-caption">Screenshot of the game</div>
+</div>
+
+<p>
+I managed to get a descent render speed after I started writing to the
+screen 4 pixels at a time. The annoying thing about this whole thing
+is that because of the way the ESP32 I2S DMA works, the data in the
+framebuffer has to be set in a weird order:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<td align="left">pixels</td><td align="left">0</td><td align="left">1</td><td align="left">2</td><td align="left">3</td><td align="left">4</td><td align="left">5</td><td align="left">6</td><td align="left">7</td><td align="left">...</td></tr>
+<tr>
+<td align="left">address</td><td align="left">[2]</td><td align="left">[3]</td><td align="left">[0]</td><td align="left">[1]</td><td align="left">[6]</td><td align="left">[7]</td><td align="left">[4]</td><td align="left">[5]</td><td align="left">...</td></tr>
+</table></div></div>
+
+
+<p>
+Another annoying thing is that the VSync and HSync bits for the VGA
+signal have to go inside every pixel in the framebuffer. To make
+things fast, I pre-baked these bits in the image data, which means
+that if I want to change to a VGA mode that happens to have different
+VSync or HSync polarity, I'll have to re-convert the images and
+recompile everything. Not a big deal, but it's annoying.
+</p>
+
+<p>
+Currently my code only supports placing images aligned horizontally to
+4 pixels (i.e., the x coordinate must be a multiple of 4). With that,
+the trick of writing 4 pixels at a time, and <b>not</b> clearing the screen
+every frame (since I'm going to overwrite everything anyway), I
+managed to get around 150 frames per second. We'll have to see how bad
+it gets once I remove the restriction on the horizontal alignment.
+</p>
+
+<p>
+All in all, I'm very pleased with the progress.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/02/21/ESP32-VGA-output">ESP32 VGA output</a></div>
   <div class="post-date">2021-02-21</div>
   <div class="post-content">
@@ -412,6 +505,7 @@ checked.
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/mod">mod</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
       <div class="tag"><a href="/tags/perfboard">perfboard</a></div>

@@ -29,6 +29,130 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico">Porting Loser Corps to the Raspberry Pi Pico</a></div>
+  <div class="post-date">2021-06-06</div>
+  <div class="post-content">
+<p>
+I decided to take a break from porting Loser Corps to the ESP32, and
+do something completely different: port Loser Corps to the Raspberry
+Pi Pico!
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/screen.jpg" alt="Loser Corps rendered on the Raspberry Pi  Pico" title="Loser Corps rendered on the Raspberry Pi  Pico">
+  <div class="image-caption">Loser Corps rendered on the Raspberry Pi  Pico</div>
+</div>
+
+<p>
+The
+<a href="https://www.raspberrypi.org/products/raspberry-pi-pico/specifications/">Pico</a>
+is smaller than the ESP32, with about half as much RAM, flash and
+clock frequency:
+</p>
+
+<div class="table-wrapper"><div class="table-scroll">
+<table>
+<tr>
+<th align="right">ESP32-WROOM</th><th align="center">Feature</th><th align="left">Raspberry Pi Pico</th></tr>
+<tr>
+<td align="right">(2x) Tensilica Xtensa LX6</td><td align="center">Processor</td><td align="left">(2x) Arm Cortex-M0+</td></tr>
+<tr>
+<td align="right">240 MHz</td><td align="center">Clock</td><td align="left">133 MHz</td></tr>
+<tr>
+<td align="right">520 KB</td><td align="center">RAM</td><td align="left">264 KB</td></tr>
+<tr>
+<td align="right">4 MB</td><td align="center">Flash</td><td align="left">2 MB</td></tr>
+<tr>
+<td align="right">2.4 GHz</td><td align="center">WiFi</td><td align="left">nope</td></tr>
+</table></div></div>
+
+
+<p>
+The Pico (like the ESP32) can adjust its main clock frequency: 133 MHz
+is the official maximum, but I'm using it at 125 MHz because that
+makes VGA signal generation much simpler: the 12.5 MHz pixel clock
+required for the 320x240 VGA mode is exactly 1/10 of the main clock
+(well, technically it should be 12.59 MHz, but 12.5 is close enough).
+</p>
+
+<div class="image">
+  <img width="480" height="640" src="/2021/06/06/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico/pico.jpg" alt="The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program." title="The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program.">
+  <div class="image-caption">The Pico connected to my homemade DACs and a Wii Nunchuk. Ignore the row of LEDs on the second breadboard, I was using them to debug the output of my PIO program.</div>
+</div>
+
+<p>
+There are some <a href="https://github.com/raspberrypi/pico-playground/tree/master/scanvideo">example
+programs</a>
+that output VGA using an official <a href="https://github.com/raspberrypi/pico-extras/tree/master/src/common/pico_scanvideo">library provided by the Raspberry
+Pi
+Foundation</a>,
+but they don't work with my old CRT monitor.  I haven't looked at the
+library or the examples too closely, but it seems that the pixel clock
+they use is too far away from the spec for my monitor: 640x480 should
+be 25.18 MHz, and from what I can tell the examples use 24.0 MHz.
+</p>
+
+<p>
+One of the cool things about the Pico is that it has a programmable
+input/output (PIO) hardware interface, which is basically a tiny
+specialized processor that can run programs that perform I/O
+operations independently from the main cores.  I used the PIO (fed via
+DMA) for the VGA output.
+</p>
+
+<p>
+After a lot of trial and failure, I went with an extremely simple PIO
+program: it's just a single instruction that gets data from the DMA
+and feeds it one byte at a time to 8 output pins.  The data has to be
+prepared exactly the right way so the output is a correctly-timed VGA
+signal, which is stays right as long as the PIO program runs at a
+fixed frequency equal to the VGA pixel clock.  In practice, this means
+that the images still need vertical and horizontal sync bits embedded
+in them, like in the ESP32.
+</p>
+
+<p>
+Maybe I will make a more complex PIO program when I get more
+experience with it. It would be nice to make the program generate the
+vertical and horizontal sync signals automatically, and free 2 bits of
+image data for colors: we could have 3:3:2 bits for red:green:blue,
+increasing the number of colors from 64 to 256.  For now, though, the
+output is exactly the same as the ESP32 (2:2:2), which is nice because
+I don't have to make new homemade DAC boards to connect to the
+monitor.  Still, a really good advantage of the PIO (even running my
+brain-dead program) over the I2S bus we use on the ESP32 is that it
+doesn't scramble the byte order.
+</p>
+
+<p>
+Even after everything was running, I ended up with problems with the
+IRQ handler for the DMA completion (which restarts the DMA to keep the
+PIO fed with data).  When the CPU got too busy (for example, in areas
+of the map with too many things on the screen), the IRQ was being
+delayed enough do disrupt the video signal, and my monitor <b>really</b>
+didn't like it.  In the end I managed to make the render loop run
+entirely without CPU supervision (it runs entirely on DMA shoving data
+into the PIO), and it only generates and IRQ for frame counting, which
+the game code uses to synchronize the framebuffer swapping (to avoid
+screen tearing).
+</p>
+
+<p>
+The only parts actually done right now are the rendering and joystick
+input (Wii nunchuk and classic controller only). The character control
+and collision detection will be done soon.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/raspberry-pi">#raspberry-pi</a>
+    <a href="/tags/pico">#pico</a>
+    <a href="/tags/pico-loser">#pico-loser</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/05/23/Porting-Loser-Corps-to-the-ESP32-Part-7">Porting Loser Corps to the ESP32 - Part 7</a></div>
   <div class="post-date">2021-05-23</div>
   <div class="post-content">
@@ -181,78 +305,6 @@ some stuff to compile under ESP-IDF.
     <a href="/tags/esp-now">#esp-now</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32">Using Wii I2C Controllers on the ESP32</a></div>
-  <div class="post-date">2021-05-15</div>
-  <div class="post-content">
-<p>
-I wrote a very simple library to make the ESP32 talk via I2C to Wii
-controllers like the Wii Nunchuk and the Wii Classic Controller.
-</p>
-
-<p>
-There are a few libraries around that do this for the Arduino using
-the <a href="https://www.arduino.cc/en/reference/wire"><code>Wire</code> library</a>, but
-for some reason that doesn't work consistently with the ESP32 and the
-Wii controllers.  So I wrote the I2C communication using the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2c.html">ESP-IDF
-API</a>,
-and it works really well, except that for some reason I wasn't able to
-make it work at 400KHz (which is supposedly what the Wii controllers
-accept), only at 100KHz.  That's a little disappointing, but good
-enough for my purposes, which is using the controllers in the ESP32
-port of Loser Corps.
-</p>
-
-<p>
-While playing with it, I wrote a little test program to display the
-state of the connected controller on a small OLED screen (SSD1306),
-which is controlled using the <a href="https://github.com/adafruit/Adafruit_SSD1306">Adafruit SSD1306
-library</a> also via I2C,
-but using the <code>Wire</code> library:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32/photo.jpg" alt="Testing the Wii Classic Controler" title="Testing the Wii Classic Controler">
-  <div class="image-caption">Testing the Wii Classic Controler</div>
-</div>
-
-<p>
-When using the Wii Classic Controller, the screen shows two triangles
-that point on the direction where you move the sticks, growing in size
-as you move the stick farther along.  Pressing each button lights a
-corresponding character on the screen, and pulling the analog triggers
-increases the size of two bars that appear on the left side.
-</p>
-
-<p>
-When using the Wii Nunchuk, the screen shows a single triangle with
-the status of the nunchuk stick and three bars to the left that show
-the status of the X, Y and Z accelerometer readings.  Pressing C or Z
-displays the corresponding letter on the screen.
-</p>
-
-<p>
-I wrote this small test program mostly for fun, but it tests something
-important: that my library, which uses I2C via ESP-IDF, can coexist
-with <code>Wire</code> library.  When using them together, you just have to be
-careful not to use the same ESP32 I2C port with the two libraries at
-the same time.  In this program, my library uses I2C port 0 and the
-<code>Wire</code> library uses I2C port 1 (by using the <code>Wire1</code> object).
-</p>
-
-<p>
-The source code for the library is here:
-<a href="https://github.com/moefh/esp32-wii-nunchuk">https://github.com/moefh/esp32-wii-nunchuk</a>
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/i2c">#i2c</a>
-    <a href="/tags/wii">#wii</a>
-    <a href="/tags/nunchuk">#nunchuk</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
@@ -287,6 +339,7 @@ The source code for the library is here:
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/mod">mod</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
       <div class="tag"><a href="/tags/perfboard">perfboard</a></div>
