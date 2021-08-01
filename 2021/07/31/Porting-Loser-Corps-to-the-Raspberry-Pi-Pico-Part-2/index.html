@@ -33,13 +33,13 @@
   <div class="post-date">2021-07-31</div>
   <div class="post-content">
 <p>
-I finished bringing the Loser Corps port on the Pico to be on par with
-the ESP32, and then added sound output supporting 4 sounds plus music
-at the same time, with music coming from a MOD player I wrote from
+I finished bringing the Loser Corps port on the Pico on par with the
+ESP32, and then added sound output supporting 4 sounds plus music at
+the same time, with music coming from a MOD player I wrote from
 scratch for the Pico.
 </p>
 
-<p class="header-1">Hardware</p>
+<p class="header-1">Sound Hardware</p>
 
 <p>
 First, let's look at the hardware side. This is my homemade sound
@@ -57,7 +57,7 @@ input) and the output is at the 2-pin male header on the left (GND and
 output).  This board is very similar to what I had in the last post in
 the breadboard, I just changed some capacitor values and moved the
 potentiometer for the volume control to go between the input coupling
-capacitor and the LM386. Here is the updated schematic:
+capacitor (now 2.2 μF) and the LM386. Here is the updated schematic:
 </p>
 
 <div class="image">
@@ -68,45 +68,45 @@ capacitor and the LM386. Here is the updated schematic:
 <p>
 One thing I didn't mention in the last post is that I tried using
 generic potentiometers for the volume control, but the metal casing
-adds a lot of noise (this might be a common thing, or it might be just
-because I live pretty close to some radio antennas). I ended up buying
-the sound table potentiometers you see in the photos, they're more
-expensive but work pretty well.
+added a lot of noise (this may be be a common thing, or it might be
+just because I live pretty close to some big radio towers, I have no
+idea). I ended up buying the sound table potentiometers you see in the
+photos, they're more expensive but work pretty well.
 </p>
 
-<p class="header-1">Code</p>
+<p class="header-1">Sound Code</p>
 
 <p>
-Now, the software side.  The game can play music and up to 4 other
-sounds at the same time, but this limit is completely arbitrary and
-can easily be changed in the source code.
+Now, the software side.  The sound code is based on the setup I had on
+the last post, with the addition of MOD music playing. It can play
+music plus up to 4 other sounds at the same time.
 </p>
 
 <p>
 The music is played with a simple MOD player I wrote from scratch for
 the Pico.  The player supports only 4 channels (easily changed in a
 <code>#define</code>) and is currently missing a lot of MOD effects like tremolo
-and vibrato, but it's good enough to play "Axel F" pretty close to
-VLC, so I'm happy with it. I also tested it with the MOD files from
-Flashback (the game from 1992) and a few other MODs from
-<a href="https://modarchive.org/">modarchive.org</a>, and it sounds passable.
+and vibrato, but it's good enough to play a really good <a href="https://modarchive.org/index.php?request=view_by_moduleid&query=177642">Axel F
+MOD</a>
+pretty close to what VLC does, so I'm happy with it. I also tested it
+with the MOD files from Flashback (the game from 1992) and a few other
+MODs from <a href="https://modarchive.org/">modarchive.org</a>.
 </p>
 
 <p>
 The player modulates notes by streching or compressing the input
 samples to the required sample rate, always choosing the nearest input
 sample (think scaling an image using the "nearest" algorithm).  It
-causes aliasing (which can be heard as noise) but it's very fast -- I
-use a fixed point number (<code>20.12</code>) to store the index of the current
-sample, and add <code>fi/fo</code> to it after playing each sample, where <code>fi</code> is
-the sample rate of the note and <code>fo</code> is the sample rate of the output
-sound (22050Hz).  So if the MOD requests a sample to be played at
-22050Hz, <code>fi/fo</code> would be <code>1</code> and the sample would be played without
-any modulation (i.e., each input sample would be sent exactly once to
-the output); if the frequency requested is 11025Hz (half), then
-<code>fi/fo</code> would be <code>0.5</code> and each input sample would be sent twice since
-it would take two additions to the sample index to advance to the next
-sample.
+causes aliasing but it's very fast -- I use a fixed point number
+(<code>20.12</code>) to store the index of the current sample, and add <code>fi/fo</code> to
+it after playing each sample, where <code>fi</code> is the sample rate of the
+note and <code>fo</code> is the sample rate of the output sound (22050Hz).  So if
+the MOD requests a sample to be played at 22050Hz, <code>fi/fo</code> would be
+<code>1</code> and the sample would be played without any modulation (i.e., each
+input sample would be sent exactly once to the output); if the
+frequency requested is 11025Hz (half), then <code>fi/fo</code> would be <code>0.5</code> and
+each input sample would be sent twice since it would take two
+additions to the sample index to advance to the next sample.
 </p>
 
 <p>
@@ -126,19 +126,21 @@ with it for now.
 <p>
 Other than the MOD player, I added some sound effects. There's a small
 "bump" sound then the player character hits the ground (I recorded it
-by gently tapping the microphone some 20 years ago when I wrote the
-game on PC) and a generic explosion sound when a shot hits something
-(taken from a free sound library from 20 years ago).
+by gently tapping a microphone some 20 years ago when making the game
+on PC) and a generic explosion sound when a shot hits something (taken
+from a free sound library from 20 years ago).
 </p>
+
+<p class="header-1">Other Code Improvements</p>
 
 <p>
 And finally, not related to sound at all, a small improvement: I added
-some tile caching for screen drawing to improve the speed and make
-sure we never drop under 60 frames per second.  Some parts of the map
-use too many different tiles, which results in slow down because we
-can't stream data from the flash fast enough to draw the entire screen
-in 16 miliseconds. So I made it store some of the most-used tiles in
-RAM, and that fixes the problem.
+some tile caching when drawing the screen to improve the speed, making
+sure the game never drops under 60 frames per second.  Some parts of
+the map use too many different tiles, which used to cause problems
+because the CPU couldn't stream data from the flash fast enough to
+draw the entire screen in 16 miliseconds. So I copy some of the
+most-used tiles to RAM at the start, and that fixes the problem.
 </p>
 
 <p>
