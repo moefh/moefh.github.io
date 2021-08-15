@@ -29,6 +29,92 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4">Porting Loser Corps to the ESP32 - Part 4</a></div>
+  <div class="post-date">2021-04-04</div>
+  <div class="post-content">
+<p>
+<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
+</p>
+
+<p>
+Working on the game network code, I was able to make two players (each
+running their own game a separate ESP32) see each other's characters:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net1.jpg" alt="First player (using the Arduino Joystick)" title="First player (using the Arduino Joystick)">
+  <div class="image-caption">First player (using the Arduino Joystick)</div>
+</div>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4/loser-net2.jpg" alt="Second player (using the Wiimote)." title="Second player (using the Wiimote).">
+  <div class="image-caption">Second player (using the Wiimote).</div>
+</div>
+
+<p>
+They're using
+<a href="https://www.espressif.com/en/products/software/esp-now/overview">ESP-NOW</a>
+(a protocol made by Espressif, the makers of ESP32) to communicate.
+Currently code is very simple, it's really just a proof-of-concept.
+Each ESP32 keeps broadcasting messages containing its character's
+position and frame.  When it receives a message, it puts a second
+character at the received location with the received frame to
+represent the remote player.
+</p>
+
+<p>
+The network part was much easier than expected, I got it running a
+couple of hours after I was able to get WiFi running inside the game
+(I had researched how to send and receive messages using ESP-NOW prior
+to that).  The hard part was freeing enough memory to get the WiFi
+system to start in the first place.  If you look closely at the
+monitors in the photos, you can see that the image's borders are cut
+at the sides: the drawing area is only 240x240 pixels (as opposed to
+the usual 320x240).  The monitor still thinks it's using the old
+resolution, in effect what I did was increase the horizontal front-
+and back-porch of the VGA timing, which decreases the horizontal
+resolution but keeps everything else unchanged (crucially, the hsync
+timing).
+</p>
+
+<p>
+That took care of the RAM, but we also had a ROM problem: with the
+added WiFi library, the program binary itself ended up too big to fit
+the flash (at least with the default Arduino IDE settings). So I
+removed some sprites, an entire tileset (<code>castle</code>) and cut some tiles
+from another tileset (<code>castle3</code>).  To do that I made the <code>conv_spr</code>
+tool (in the <code>conv_img</code> directory in the Github repository) -- it's an
+improvement of the tool I had made before but hadn't released.
+</p>
+
+<p>
+The nice side of all that work is that now it's much easier to change
+the resolution with the new VGA code.  It can also select between
+using double framebuffers (as before) or a single framebuffer.  I made
+that when researching ways to decrease VGA memory use -- it turns out
+that the game <b>almost</b> runs well enough with a single framebuffer, but
+it's not quite fast enough to draw the whole screen during
+<a href="https://en.wikipedia.org/wiki/Vertical_blanking_interval">vblank</a>
+(the time when the monitor is not actively drawing the image), so the
+top portion of the screen gets a little messed up if we try.  That's
+why the solution I chose at the end was to decrease the resolution and
+keep using two framebuffers, but I kept the code to use a single
+framebuffer in case I need it for another project in the future.
+</p>
+
+<p>
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/esp32">#esp32</a>
+    <a href="/tags/esp32-loser">#esp32-loser</a>
+    <a href="/tags/loser-corps">#loser-corps</a>
+    <a href="/tags/vga">#vga</a>
+    <a href="/tags/network">#network</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/04/02/Homemade-ESP32-VGA-Boards">Homemade ESP32 VGA Boards</a></div>
   <div class="post-date">2021-04-02</div>
   <div class="post-content">
@@ -355,89 +441,6 @@ of each one.
     <a href="/tags/wiimote">#wiimote</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">Porting Loser Corps to the ESP32 - Part 2</a></div>
-  <div class="post-date">2021-03-07</div>
-  <div class="post-content">
-<p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-Here's a demo video (click to open Youtube):
-</p>
-
-<div>
-<a href="https://www.youtube.com/watch?v=BvJ3HLKo6p4"><div class="image">
-  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser1.jpg" alt="Youtube video" title="Youtube video">
-  <div class="image-caption">Youtube video</div>
-</div></a>
-</div>
-
-<p>
-(This video shows a slightly older version where collision detection
-was done with the image rectangle, not the character's clipping
-rectangle, which is why it looks a little wonky in a few places.)
-</p>
-
-<p>
-As the video shows, you control a character in a map, walking and
-jumping around.  I reworked some parts of the movement code, but it
-feels a lot like the original, although I think the jump is not high
-enough.  The collision detection is pretty much untouched, except for
-what I absolutely had to do to make it run in the ESP32, which wasn't
-much.
-</p>
-
-<p>
-The joystick I'm using is a common Arduino joystick shield.  It's
-pretty cheap and easy to use, but it requires one input pin of the
-ESP32 for each button, and one analog input pin for each direction of
-the stick -- it's really just a bunch of of buttons and
-<a href="https://en.wikipedia.org/wiki/Potentiometer">potentiometers</a>
-conveniently placed on a PCB:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2/loser3.jpg" alt="The Arduino joystick shield I'm using" title="The Arduino joystick shield I'm using">
-  <div class="image-caption">The Arduino joystick shield I'm using</div>
-</div>
-
-<p>
-I've connected all buttons pins, but the code only uses the C button
-to jump and the X analog stick to move.
-</p>
-
-<p>
-I've tried to use a Wiimote nunchuck and a Wiimote classic controller,
-but I didn't have much success.  These controllers use an
-<a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a> interface to talk to the
-Wiimote, so it seems like they should be easy to use with the ESP32 --
-and it actually works, but it's very unreliable.  The controller stops
-replying for no apparent reason, a lot of times requiring an
-unplug/re-plug to start working again.  I've tried it with no pullup
-resistors, 4.7K pullups, 10K pullups, all for nothing.  The strangest
-thing is that it works perfectly with an Arduino Uno (using the same
-exact test code), even with no pullup resistors.  I say people saying
-that the I2C part of the ESP32 Arduino library isn't that great, so
-maybe that's the problem?
-</p>
-
-<p>
-Another nice option would be to use the Wiimote itself, which uses
-Bluetooth.  That's probably the next thing I'll work on in this
-project.
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
-    <a href="/tags/joystick">#joystick</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
@@ -445,7 +448,7 @@ project.
         <a href="/page3.html">&#x2190; Previous</a>
       </div>
 
-      <div class="nav-link nav-link-page-num">Page 4/5</div>
+      <div class="nav-link nav-link-page-num">Page 4/6</div>
       
       <div class="nav-link nav-link-next">
         <a href="/page5.html">Next &#x2192;</a>
@@ -472,6 +475,7 @@ project.
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/midi">midi</a></div>
       <div class="tag"><a href="/tags/mod">mod</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
@@ -481,6 +485,7 @@ project.
       <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
       <div class="tag"><a href="/tags/sound">sound</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/usb">usb</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
       <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
@@ -490,6 +495,7 @@ project.
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/08">August 2021</a></div>
       <div class="month"><a href="/archives/2021/07">July 2021</a></div>
       <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>

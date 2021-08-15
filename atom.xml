@@ -4,12 +4,87 @@
   <subtitle>The Magic Smoke Has Left the Building</subtitle>
   <link href="https://moefh.github.io/atom.xml" rel="self"/>
   <link href="https://moefh.github.io/"/>
-  <updated>2021-07-31T14:45:14.000</updated>
+  <updated>2021-08-15T19:31:20.000</updated>
   <id>https://moefh.github.io/</id>
   <author>
     <name>MoeFH</name>
   </author>
   <generator uri="https://moefh.github.io/">BloGen</generator>
+  <entry>
+    <title>Pico Homemade MIDI USB Keyboard</title>
+    <link href="https://moefh.github.io/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard/"/>
+    <id>https://moefh.github.io/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard/</id>
+    <published>2021-08-15T19:31:20.000</published>
+    <updated>2021-08-15T19:31:20.000</updated>
+    <content type="html"><![CDATA[<p>
+I made a very simple homemade MIDI keyboard USB device using the Raspberry Pi Pico:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard/photo.jpg" alt="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger" title="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger">
+  <div class="image-caption">MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger</div>
+</div>
+
+<p>
+The keyboard is just 12 buttons arranged as a vague semblance of a
+piano keyboard (just one octave).  Each button closes the connection
+to ground when pressed, and is connected to an input pin of the Pico
+which is pulled up, so when the button is pressed the input goes low.
+</p>
+
+<p>
+I used TinyUSB to make the Pico act as a MIDI USB device when
+connected to a PC. The program is really simple: I just changed a MIDI
+example included in the TinyUSB project, adapting it to send MIDI
+notes when the buttons are pressed, with some very rudimentary
+debouncing for the buttons.
+</p>
+
+<p>
+This project gave me an excuse to learn how to program and debug a
+Pico using another Pico as the hardware debugger, using picoprobe (I
+had to do it because I usually <code>printf</code> debug using the USB serial,
+but that obviously wouldn't work in this project).  To use picoprobe
+you just have to flash the Pico that will be used as the debugger with
+the picoprobe firmware (<code>picoprobe.uf2</code>) and make some connections
+from its GPIO pins to the Pico being debugged (SWD pins and the UART
+RX/TX).
+</p>
+
+<p>
+Everything went really smoothly, so there's nothing much to say, other
+than Picoprobe is a great way to upload programs to the Pico: there's
+no need to reset with the Bootsel button pressed.  I might start using
+it even when I'm not using the USB for anything else.  You can also
+actually run GDB to debug the program live on the Pico, but I rarely
+use GDB like that.
+</p>
+
+<p>
+On the MIDI device side of things, it works really great on Windows. I
+was even able to record a crappy song I played on the crappy keyboard
+using <a href="https://www.midieditor.org/">MidiEditor</a>, even though there's
+some noticeable input lag.
+</p>
+
+<p>
+On Linux, I see no input lag when dumping the MIDI events with
+<code>aseqdump</code> (an Alsa command line program), but I had no luck recording
+input from the MIDI device using MIDI editors or other GUI programs.
+Every GUI program I tried wasn't able to receive MIDI input -- most of
+them just crash when trying to connect to Jack (which is installed and
+running, but for some reason doesn't work), and the ones that can be
+configured to use Alsa simply don't work when told to do so.  I have
+no energy to try to make this work, so I'll have to use Windows if I
+want to do more with this project.
+</p>
+
+<p>
+In any case, this was a fun little project to learn how to make the
+Pico into a USB device and use Picoprobe.
+
+</p>]]></content>
+  </entry>
   <entry>
     <title>Porting Loser Corps to the Raspberry Pi Pico - Part 2</title>
     <link href="https://moefh.github.io/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2/"/>
@@ -797,101 +872,6 @@ framebuffer in case I need it for another project in the future.
 <p>
 
 </p>]]></content>
-  </entry>
-  <entry>
-    <title>Homemade ESP32 VGA Boards</title>
-    <link href="https://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/"/>
-    <id>https://moefh.github.io/2021/04/02/Homemade-ESP32-VGA-Boards/</id>
-    <published>2021-04-02T00:33:36.000</published>
-    <updated>2021-04-02T00:33:36.000</updated>
-    <content type="html"><![CDATA[<p>
-To start experimenting with the networking code of the <a href="/2021/03/07/Porting-Loser-Corps-to-the-ESP32-Part-2">ESP32 game engine</a>, I made
-a new board for the ESP32 so I can have two of them running the game
-and talking to each other.  The new board was supposed to be just a
-copy of the original one, but I discovered a silly mistake I made in
-the original wiring: the red-high and red-low wires were reversed.
-This caused quite a mess in the colors, I'm surprised I didn't notice
-it before:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-1.jpg" alt="Comparison showing that the old board has wrong red levels" title="Comparison showing that the old board has wrong red levels">
-  <div class="image-caption">Comparison showing that the old board has wrong red levels</div>
-</div>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-2.jpg" alt="Zoom in the "P"" title="Zoom in the "P"">
-  <div class="image-caption">Zoom in the "P"</div>
-</div>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-3.jpg" alt="Bridge and torch" title="Bridge and torch">
-  <div class="image-caption">Bridge and torch</div>
-</div>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/cmp-4.jpg" alt="Zoom in the torch" title="Zoom in the torch">
-  <div class="image-caption">Zoom in the torch</div>
-</div>
-
-<p>
-The "new dac" label refers to the fixed DACs I wrote about in the <a href="/2021/03/27/Porting-Loser-Corps-to-the-ESP32-Part-3">last post</a>. I'm
-not sure I can see any difference between the old an new DACs, to be
-honest (my phone camera doesn't help -- its automatic color balance
-messes up the colors way more than my DACs, apparently).
-</p>
-
-<p>
-In any case, it's easy to see the difference between the old and new
-boards. Not only the new board's images have a blue-greenish tint
-overall (less red), we can also see that the red gradient in the "P"
-is clearly fixed -- what should be <code>black</code>-><code>dark red</code>-><code>medium
-red</code>-><code>bright red</code> was wrongly shown as <code>black</code>-><code>medium red</code>-><code>dark
-red</code>-><code>bright red</code>, which is happens when the low and high bits of the
-red component are swapped:
-</p>
-
-<div class="table-wrapper"><div class="table-scroll">
-<table>
-<tr>
-<th align="left"></th><th align="left">correct gradient</th><th align="left">swapped first and second bits</th></tr>
-<tr>
-<td align="left">binary</td><td align="left">00 01 10 11</td><td align="left">00 10 01 11</td></tr>
-<tr>
-<td align="left">decimal</td><td align="left">0  1  2  3</td><td align="left">0  2  1  3</td></tr>
-</table></div></div>
-
-
-<p>
-Of course, since we can select the ESP32 output pins any way we want,
-it's easy to fix this in software by simply changing the pin
-assignments in the <code>pin_config</code> array in <code>vga_game.ino</code>: just swap
-<code>PIN_RED_LOW</code> and <code>PIN_RED_HIGH</code>. That's good news for me because I
-don't feel like making a third board right now.
-</p>
-
-<p>
-And finally, just for reference, here are all of the homemade boards
-I'm using in this project:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/new_board.jpg" alt="New board" title="New board">
-  <div class="image-caption">New board</div>
-</div>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/old_board.jpg" alt="Old board (notice that the red wires don't cross, unlike the blue and green ones)" title="Old board (notice that the red wires don't cross, unlike the blue and green ones)">
-  <div class="image-caption">Old board (notice that the red wires don't cross, unlike the blue and green ones)</div>
-</div>
-
-<div>
-<div class="image">
-  <img width="640" height="480" src="/2021/04/02/Homemade-ESP32-VGA-Boards/dacs.jpg" alt="DACs" title="DACs">
-  <div class="image-caption">DACs</div>
-</div>
-
-</div>]]></content>
   </entry>
 </feed>
 

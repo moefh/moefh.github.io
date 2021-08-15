@@ -29,65 +29,96 @@
 <div class="content-left">
 
 <div class="post">
-  <div class="post-title"><a href="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5">Porting Loser Corps to the ESP32 - Part 5</a></div>
-  <div class="post-date">2021-04-17</div>
+  <div class="post-title"><a href="/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard">Pico Homemade MIDI USB Keyboard</a></div>
+  <div class="post-date">2021-08-15</div>
   <div class="post-content">
 <p>
-<i>More progress in porting Loser Corps to the ESP32 (see <a href="/tags/esp32-loser">all posts about the port</a>).</i>
-</p>
-
-<p>
-This is just a quick update: I have added shooting to the game.  You
-shoot by pressing ② in the Wiimote (or <code>D</code> in the Arduino joystick).
-There can be at most 14 shots active at once, and they do nothing but
-fly in a straight line until they hit a wall or the edge of the map.
+I made a very simple homemade MIDI keyboard USB device using the Raspberry Pi Pico:
 </p>
 
 <div class="image">
-  <img width="640" height="480" src="/2021/04/17/Porting-Loser-Corps-to-the-ESP32-Part-5/shot.jpg" alt="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)" title="Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)">
-  <div class="image-caption">Scheenshot of projectile (the camera doesn't like moving objects, in  reality it's less blurry than shown  here)</div>
+  <img width="640" height="480" src="/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard/photo.jpg" alt="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger" title="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger">
+  <div class="image-caption">MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger</div>
 </div>
 
 <p>
-I also ported the game to use the ESP-IDF framework (as opposed to the
-Arduino framework, which originally used).  I'm trying to see if I can
-decrease the memory used by the WiFi system so the game can use full
-320x240 resolution while in networked mode, and the EDP-IDF framework
-has lots of configuration options.  I haven't made much progress with
-it yet: I was just recently able to make the game run at full speed,
-after finding that I have to set not ony the processor clock to 240MHz
-but also the flash SPI clock to 80MHz (apparently the flash speed is a
-bottleneck, which is not surprising since we copy images directly from
-flash to the framebuffer).
+The keyboard is just 12 buttons arranged as a vague semblance of a
+piano keyboard (just one octave).  Each button closes the connection
+to ground when pressed, and is connected to an input pin of the Pico
+which is pulled up, so when the button is pressed the input goes low.
 </p>
 
 <p>
-As usual, the source is on
-<a href="https://github.com/moefh/esp32-loser">Github</a> (I realize I haven't
-written this before, so from now on I'll start adding this link to
-every post).
+I used TinyUSB to make the Pico act as a MIDI USB device when
+connected to a PC. The program is really simple: I just changed a MIDI
+example included in the TinyUSB project, adapting it to send MIDI
+notes when the buttons are pressed, with some very rudimentary
+debouncing for the buttons.
+</p>
+
+<p>
+This project gave me an excuse to learn how to program and debug a
+Pico using another Pico as the hardware debugger, using picoprobe (I
+had to do it because I usually <code>printf</code> debug using the USB serial,
+but that obviously wouldn't work in this project).  To use picoprobe
+you just have to flash the Pico that will be used as the debugger with
+the picoprobe firmware (<code>picoprobe.uf2</code>) and make some connections
+from its GPIO pins to the Pico being debugged (SWD pins and the UART
+RX/TX).
+</p>
+
+<p>
+Everything went really smoothly, so there's nothing much to say, other
+than Picoprobe is a great way to upload programs to the Pico: there's
+no need to reset with the Bootsel button pressed.  I might start using
+it even when I'm not using the USB for anything else.  You can also
+actually run GDB to debug the program live on the Pico, but I rarely
+use GDB like that.
+</p>
+
+<p>
+On the MIDI device side of things, it works really great on Windows. I
+was even able to record a crappy song I played on the crappy keyboard
+using <a href="https://www.midieditor.org/">MidiEditor</a>, even though there's
+some noticeable input lag.
+</p>
+
+<p>
+On Linux, I see no input lag when dumping the MIDI events with
+<code>aseqdump</code> (an Alsa command line program), but I had no luck recording
+input from the MIDI device using MIDI editors or other GUI programs.
+Every GUI program I tried wasn't able to receive MIDI input -- most of
+them just crash when trying to connect to Jack (which is installed and
+running, but for some reason doesn't work), and the ones that can be
+configured to use Alsa simply don't work when told to do so.  I have
+no energy to try to make this work, so I'll have to use Windows if I
+want to do more with this project.
+</p>
+
+<p>
+In any case, this was a fun little project to learn how to make the
+Pico into a USB device and use Picoprobe.
+
 </p>
   </div>
   <div class="post-tags">
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/esp32-loser">#esp32-loser</a>
-    <a href="/tags/loser-corps">#loser-corps</a>
-    <a href="/tags/vga">#vga</a>
+    <a href="/tags/usb">#usb</a>
+    <a href="/tags/pico">#pico</a>
+    <a href="/tags/midi">#midi</a>
+    <a href="/tags/sound">#sound</a>
   </div>
 </div>
 
 <div class="footer">
     <div class="post-links">
       <div class="nav-link nav-link-left">
-        &#x2190; newer<br>
-        <a href="/2021/05/15/Using-Wii-I2C-Controllers-on-the-ESP32">Using Wii I2C Controllers on the ESP32</a>
       </div>
 
       <div class="nav-link nav-link-separator"></div>
       
       <div class="nav-link nav-link-right">
         older &#x2192;<br>
-        <a href="/2021/04/04/Porting-Loser-Corps-to-the-ESP32-Part-4">Porting Loser Corps to the ESP32 - Part 4</a>
+        <a href="/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2">Porting Loser Corps to the Raspberry Pi Pico - Part 2</a>
       </div>
 
     </div>

@@ -29,6 +29,86 @@
 <div class="content-left">
 
 <div class="post">
+  <div class="post-title"><a href="/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard">Pico Homemade MIDI USB Keyboard</a></div>
+  <div class="post-date">2021-08-15</div>
+  <div class="post-content">
+<p>
+I made a very simple homemade MIDI keyboard USB device using the Raspberry Pi Pico:
+</p>
+
+<div class="image">
+  <img width="640" height="480" src="/2021/08/15/Pico-Homemade-MIDI-USB-Keyboard/photo.jpg" alt="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger" title="MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger">
+  <div class="image-caption">MIDI keyboard device built using a Pico attached to another Pico  acting as a hardware  debugger</div>
+</div>
+
+<p>
+The keyboard is just 12 buttons arranged as a vague semblance of a
+piano keyboard (just one octave).  Each button closes the connection
+to ground when pressed, and is connected to an input pin of the Pico
+which is pulled up, so when the button is pressed the input goes low.
+</p>
+
+<p>
+I used TinyUSB to make the Pico act as a MIDI USB device when
+connected to a PC. The program is really simple: I just changed a MIDI
+example included in the TinyUSB project, adapting it to send MIDI
+notes when the buttons are pressed, with some very rudimentary
+debouncing for the buttons.
+</p>
+
+<p>
+This project gave me an excuse to learn how to program and debug a
+Pico using another Pico as the hardware debugger, using picoprobe (I
+had to do it because I usually <code>printf</code> debug using the USB serial,
+but that obviously wouldn't work in this project).  To use picoprobe
+you just have to flash the Pico that will be used as the debugger with
+the picoprobe firmware (<code>picoprobe.uf2</code>) and make some connections
+from its GPIO pins to the Pico being debugged (SWD pins and the UART
+RX/TX).
+</p>
+
+<p>
+Everything went really smoothly, so there's nothing much to say, other
+than Picoprobe is a great way to upload programs to the Pico: there's
+no need to reset with the Bootsel button pressed.  I might start using
+it even when I'm not using the USB for anything else.  You can also
+actually run GDB to debug the program live on the Pico, but I rarely
+use GDB like that.
+</p>
+
+<p>
+On the MIDI device side of things, it works really great on Windows. I
+was even able to record a crappy song I played on the crappy keyboard
+using <a href="https://www.midieditor.org/">MidiEditor</a>, even though there's
+some noticeable input lag.
+</p>
+
+<p>
+On Linux, I see no input lag when dumping the MIDI events with
+<code>aseqdump</code> (an Alsa command line program), but I had no luck recording
+input from the MIDI device using MIDI editors or other GUI programs.
+Every GUI program I tried wasn't able to receive MIDI input -- most of
+them just crash when trying to connect to Jack (which is installed and
+running, but for some reason doesn't work), and the ones that can be
+configured to use Alsa simply don't work when told to do so.  I have
+no energy to try to make this work, so I'll have to use Windows if I
+want to do more with this project.
+</p>
+
+<p>
+In any case, this was a fun little project to learn how to make the
+Pico into a USB device and use Picoprobe.
+
+</p>
+  </div>
+  <div class="post-tags">
+    <a href="/tags/usb">#usb</a>
+    <a href="/tags/pico">#pico</a>
+    <a href="/tags/midi">#midi</a>
+    <a href="/tags/sound">#sound</a>
+  </div>
+</div>
+<div class="post">
   <div class="post-title"><a href="/2021/07/31/Porting-Loser-Corps-to-the-Raspberry-Pi-Pico-Part-2">Porting Loser Corps to the Raspberry Pi Pico - Part 2</a></div>
   <div class="post-date">2021-07-31</div>
   <div class="post-content">
@@ -298,100 +378,13 @@ Github</a>.
     <a href="/tags/lm386">#lm386</a>
   </div>
 </div>
-<div class="post">
-  <div class="post-title"><a href="/2021/06/13/New-VGA-Boards">New VGA Boards</a></div>
-  <div class="post-date">2021-06-13</div>
-  <div class="post-content">
-<p>
-In the process of creating a new perfboard to connect the Pico to a
-VGA monitor, I realized that all the VGA DACs I made so far are using
-only half the voltage range, which results in a very dark image all
-around.
-</p>
-
-<p>
-Here's what I figure happened: the initial schematic I drew for a the
-DAC used a 75 Ohm resistor to ground, which I initially put there to
-represent the one inside the monitor (so I could calculate the values
-for the other resistors). Later, when building the boards, I put that
-75 Ohm resistor on the board, so there were TWO 75 Ohm resistors to
-ground in parallel, which results in everything being roughly half the
-voltage it's supposed to be.  Later, when looking at that schematic, I
-though I had put that resistor there for impedance matching (which I
-knew was not really right), so I left it alone.
-</p>
-
-<p>
-When I started builiding a perfboard for the Pico (to make it more
-permanent that the breadboard I had last week), I decided to calculate
-everything from scratch, and I realized the mistake.  My correction
-still uses a 75 Ohm to ground, but the other resistors have much lower
-values to compensate.  The current drawn from the pins is much larger,
-but still below 15 mA, so I think that will bo OK for the Pico and the
-ESP32.
-</p>
-
-<p>
-Here's the new schematic for each DAC:
-</p>
-
-<div class="image">
-  <img width="313" height="281" src="/2021/06/13/New-VGA-Boards/dac-schematic.png" alt="New DAC schematic" title="New DAC schematic">
-  <div class="image-caption">New DAC schematic</div>
-</div>
-
-<p>
-And here's the Loser Corps screen with the new DACs:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-new-dacs.jpg" alt="Loser Corps running on the Pico with the new DACs" title="Loser Corps running on the Pico with the new DACs">
-  <div class="image-caption">Loser Corps running on the Pico with the new DACs</div>
-</div>
-
-<p>
-Here's the screen with the old DACs for comparison:
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/screen-old-dacs.jpg" alt="Screen with the old DACs" title="Screen with the old DACs">
-  <div class="image-caption">Screen with the old DACs</div>
-</div>
-
-<p>
-The new perfboards have the resistors soldered on the main board where
-the the Pico and the ESP32 are inserted, and the small boards with the
-VGA connectors have with nothing but female headers with 6 pins to
-connect to the main board.  This way, if I ever want to change DACs
-again, I don't have to solder wires to the VGA connector (which is a
-very unpleasant job).
-</p>
-
-<div class="image">
-  <img width="640" height="480" src="/2021/06/13/New-VGA-Boards/perfboards.jpg" alt="New perfboards" title="New perfboards">
-  <div class="image-caption">New perfboards</div>
-</div>
-
-<p>
-The Pico board has two sets of connections for I2C (for the Wii
-Nunchuk). I'll add these connections to the ESP32 board later.
-
-</p>
-  </div>
-  <div class="post-tags">
-    <a href="/tags/vga">#vga</a>
-    <a href="/tags/esp32">#esp32</a>
-    <a href="/tags/pico">#pico</a>
-    <a href="/tags/perfboard">#perfboard</a>
-  </div>
-</div>
 
 <div class="footer">
     <div class="page-links">
       <div class="nav-link nav-link-prev">
       </div>
 
-      <div class="nav-link nav-link-page-num">Page 1/5</div>
+      <div class="nav-link nav-link-page-num">Page 1/6</div>
       
       <div class="nav-link nav-link-next">
         <a href="/page2.html">Next &#x2192;</a>
@@ -418,6 +411,7 @@ Nunchuk). I'll add these connections to the ESP32 board later.
       <div class="tag"><a href="/tags/joystick">joystick</a></div>
       <div class="tag"><a href="/tags/lm386">lm386</a></div>
       <div class="tag"><a href="/tags/loser-corps">loser-corps</a></div>
+      <div class="tag"><a href="/tags/midi">midi</a></div>
       <div class="tag"><a href="/tags/mod">mod</a></div>
       <div class="tag"><a href="/tags/network">network</a></div>
       <div class="tag"><a href="/tags/nunchuk">nunchuk</a></div>
@@ -427,6 +421,7 @@ Nunchuk). I'll add these connections to the ESP32 board later.
       <div class="tag"><a href="/tags/raspberry-pi">raspberry-pi</a></div>
       <div class="tag"><a href="/tags/sound">sound</a></div>
       <div class="tag"><a href="/tags/stm32">stm32</a></div>
+      <div class="tag"><a href="/tags/usb">usb</a></div>
       <div class="tag"><a href="/tags/vga">vga</a></div>
       <div class="tag"><a href="/tags/wii">wii</a></div>
       <div class="tag"><a href="/tags/wiimote">wiimote</a></div>
@@ -436,6 +431,7 @@ Nunchuk). I'll add these connections to the ESP32 board later.
   <div class="month-list">
     <div class="title">ARCHIVES</div>
     <div class="months">
+      <div class="month"><a href="/archives/2021/08">August 2021</a></div>
       <div class="month"><a href="/archives/2021/07">July 2021</a></div>
       <div class="month"><a href="/archives/2021/06">June 2021</a></div>
       <div class="month"><a href="/archives/2021/05">May 2021</a></div>
